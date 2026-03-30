@@ -2,11 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Energy Webpage</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Energy Data</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Energy Data</h1>
+
+  <nav>
+    <div class="nav-logo">⚡ EnergyData</div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Data</a>
+      <a href="#">Contact</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Understanding Energy Around the World</h1>
+    <p>This project explores global energy sources, consumption trends, and the shift toward renewable energy.</p>
+  </div>
+
+  <div class="section">
+    <h2>Energy sources</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400" alt="Solar panels">
+        <div class="card-body">
+          <h3>Solar power</h3>
+          <p>Sunlight is converted into electricity using photovoltaic panels. Solar is one of the fastest-growing energy sources globally.</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400" alt="Wind turbines">
+        <div class="card-body">
+          <h3>Wind power</h3>
+          <p>Wind turbines harness kinetic energy from the wind, installed on land and offshore around the world.</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1548337138-e87d889cc369?w=400" alt="Hydropower dam">
+        <div class="card-body">
+          <h3>Hydropower</h3>
+          <p>Water flowing through dams generates electricity. It is one of the oldest forms of renewable energy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section stats-section">
+    <h2>Key statistics</h2>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">29%</div>
+        <div class="stat-label">Global electricity from renewables (2023)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">8.7B</div>
+        <div class="stat-label">World population using energy daily</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3x</div>
+        <div class="stat-label">Solar capacity growth over 5 years</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>About this project</h2>
+    <div class="about">
+      <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600" alt="Power lines">
+      <div>
+        <p>This website was created as part of the COS30045 Data Visualization unit at Swinburne University. The goal is to present energy data in a clear and accessible way using HTML, CSS, and JavaScript.</p>
+        <br>
+        <p>Future versions will include interactive charts and maps built with D3.js.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    COS30045 Data Visualization | Swinburne University | 2025
+  </footer>
+
   <script src="js/scripts.js"></script>
 </body>
 </html>
