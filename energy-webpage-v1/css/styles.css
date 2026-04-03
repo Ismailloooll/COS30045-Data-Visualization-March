@@ -82,6 +82,7 @@ nav {
   height: 160px;
   object-fit: cover;
   display: block;
+  background: #e8f5ee;
 }
 
 .card-body { padding: 14px; }
