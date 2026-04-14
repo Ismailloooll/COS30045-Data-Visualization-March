@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Appliance Energy Consumption</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
 
@@ -17,33 +18,35 @@
     </div>
   </nav>
 
-  <!-- Home Page -->
+  <!-- ==================== HOME PAGE ==================== -->
   <div id="page-home" class="page">
+
     <div class="hero">
-      <h1>Appliance Energy Consumption</h1>
+      <h1>Appliance Energy Consumption in Australia</h1>
       <p>Explore how everyday household appliances consume energy in Australian homes. Understanding energy usage helps reduce electricity bills and environmental impact.</p>
     </div>
 
     <div class="section">
       <h2>Why energy consumption matters</h2>
-      <p>Australian households spend an average of $1,700 per year on electricity. Appliances account for a significant portion of this cost. By understanding which appliances use the most energy, you can make smarter choices.</p>
+      <p>Australian households spend an average of $1,700 per year on electricity. Appliances account for a significant portion of this cost. Understanding which appliances use the most energy helps consumers make smarter, more sustainable choices.</p>
+
       <div class="cards">
         <div class="card">
-          <div class="card-icon">🏠</div>
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Australian house" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>Average household</h3>
             <p>An average Australian home uses around 18–20 kWh of electricity per day across all appliances.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">💡</div>
+          <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&q=80" alt="Power lines" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>Biggest energy users</h3>
             <p>Heating and cooling, water heaters, and refrigerators are the top energy consumers in most homes.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">📉</div>
+          <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&q=80" alt="Wind energy" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>Reduce your bill</h3>
             <p>Switching to energy-efficient appliances with high star ratings can cut energy costs by up to 30%.</p>
@@ -55,66 +58,151 @@
     <div class="section stats-section">
       <h2>Quick facts</h2>
       <div class="stats">
-        <div class="stat">
-          <div class="stat-num">$1,700</div>
-          <div class="stat-label">Average annual electricity bill</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">40%</div>
-          <div class="stat-label">Of bill from heating & cooling</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">6 stars</div>
-          <div class="stat-label">Maximum energy star rating</div>
+        <div class="stat"><div class="stat-num">$1,700</div><div class="stat-label">Average annual electricity bill</div></div>
+        <div class="stat"><div class="stat-num">40%</div><div class="stat-label">Of bill from heating and cooling</div></div>
+        <div class="stat"><div class="stat-num">6 stars</div><div class="stat-label">Maximum energy star rating</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>About the energy star rating system</h2>
+      <div class="about-row">
+        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500&q=80" alt="Solar panels" class="about-img" onerror="this.style.display='none'">
+        <div>
+          <p>The Australian energy star rating system helps consumers compare the energy efficiency of appliances. More stars means more efficient. The system is mandatory for many appliances sold in Australia including televisions, refrigerators, and washing machines.</p>
+          <br>
+          <p>When shopping for a new TV, choosing a model with a higher star rating can save hundreds of dollars over the lifetime of the product while also reducing your household carbon footprint.</p>
+          <br>
+          <div class="tip-box">
+            <strong>💡 Energy saving tip:</strong> Turning off your TV at the wall instead of leaving it on standby can save up to $9 per year per TV.
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 
-  <!-- Televisions Page -->
+  <!-- ==================== TELEVISIONS PAGE ==================== -->
   <div id="page-televisions" class="page hidden">
+
     <div class="hero">
       <h1>Television Energy Consumption</h1>
-      <p>Televisions are one of the most common appliances in Australian homes. Learn how different TV types and sizes affect your energy bill.</p>
+      <p>Explore interactive data visualisations showing TV energy consumption patterns across different technologies, sizes, and brands in Australia. Data sourced from the Australian Government energy rating dataset.</p>
     </div>
 
+    <!-- Q1 Chart -->
     <div class="section">
-      <h2>TV types and energy use</h2>
+      <h2>Q1: Screen technologies available in Australia</h2>
+      <p>This chart shows the number of currently available TV models in Australia grouped by screen technology type. LCD (LED) is the dominant technology with 3,747 models, far outnumbering OLED and LCD.</p>
+      <div class="chart-container">
+        <div id="loading-tech" class="loading">Loading chart...</div>
+        <svg id="chart-tech"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> LCD (LED) technology accounts for over 80% of available TV models in Australia, making it by far the most common screen technology on the market.
+      </div>
+    </div>
+
+    <!-- Q2 Chart -->
+    <div class="section stats-section">
+      <h2>Q2: Screen sizes available in Australia</h2>
+      <p>This chart shows the distribution of TV screen sizes in the Australian market. Sizes are grouped into standard advertised categories converted from the original centimetre measurements.</p>
+      <div class="chart-container">
+        <div id="loading-size" class="loading">Loading chart...</div>
+        <svg id="chart-size"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> 55-inch and 65-inch TVs are the most commonly available sizes, reflecting growing consumer preference for larger screens.
+      </div>
+    </div>
+
+    <!-- Q3 Chart -->
+    <div class="section">
+      <h2>Q3: Brands with most TV models</h2>
+      <p>This chart shows which brands have the largest number of different TV models available in Australia. Brand names have been standardised to uppercase for consistency.</p>
+      <div class="chart-container chart-container-tall">
+        <div id="loading-brands" class="loading">Loading chart...</div>
+        <svg id="chart-brands"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> A small number of major brands dominate the Australian TV market with significantly more models than smaller brands.
+      </div>
+    </div>
+
+    <!-- Q4 Chart -->
+    <div class="section stats-section">
+      <h2>Q4: Average power consumption by screen technology</h2>
+      <p>This chart compares the average power consumption in watts for each screen technology type. Lower values indicate more energy efficient technology.</p>
+      <div class="chart-container">
+        <div id="loading-power" class="loading">Loading chart...</div>
+        <svg id="chart-power"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> LCD (LED) technology has the lowest average power consumption, making it the most energy efficient option currently available in Australia.
+      </div>
+    </div>
+
+    <!-- TV Type Cards with Images -->
+    <div class="section">
+      <h2>TV technologies explained</h2>
       <div class="cards">
         <div class="card">
-          <div class="card-icon">📺</div>
+          <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=400&q=80" alt="LED TV" onerror="this.style.display='none'">
           <div class="card-body">
-            <h3>LED TV</h3>
-            <p>Most common type today. A 55-inch LED TV uses around 60–80 watts. Energy efficient and widely available in Australia.</p>
+            <h3>LED / LCD TV</h3>
+            <p>Most common and energy efficient type. A 55-inch LED TV uses around 60–80 watts. Widely available across all price ranges in Australia.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">🖥️</div>
+          <img src="https://images.unsplash.com/photo-1567690187548-f07b1d7bf5a9?w=400&q=80" alt="OLED TV" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>OLED TV</h3>
-            <p>Superior picture quality but uses slightly more power — around 80–120 watts for a 55-inch screen.</p>
+            <p>Superior picture quality with perfect blacks. Uses slightly more power — around 80–120 watts for a 55-inch screen. Premium price range.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">📡</div>
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Plasma TV" onerror="this.style.display='none'">
           <div class="card-body">
-            <h3>Plasma TV (old)</h3>
-            <p>Older plasma TVs used 150–300 watts — much higher than modern equivalents. Most have been phased out.</p>
+            <h3>Plasma TV (legacy)</h3>
+            <p>Older technology using 150–300 watts — much higher than modern equivalents. Most models have been discontinued.</p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Q5 Chart -->
+    <div class="section stats-section">
+      <h2>Q5: Relationship between screen size and power use</h2>
+      <p>This scatter plot shows the relationship between screen size (in inches) and average power consumption (in watts). Each dot represents one TV model.</p>
+      <div class="chart-container">
+        <div id="loading-scatter" class="loading">Loading chart...</div>
+        <svg id="chart-scatter"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> There is a clear positive relationship — as screen size increases, power consumption increases. However there is significant variation showing some large TVs are much more efficient than others.
+      </div>
+    </div>
+
+    <!-- Q6 Chart -->
     <div class="section">
-      <h2>Estimated annual cost by TV size</h2>
+      <h2>Q6: Average star rating by screen size</h2>
+      <p>This chart shows how energy star ratings vary across different screen size categories. The star rating system accounts for screen size so larger TVs are not automatically penalised.</p>
+      <div class="chart-container">
+        <div id="loading-star" class="loading">Loading chart...</div>
+        <svg id="chart-star"></svg>
+      </div>
+      <div class="chart-insight">
+        <strong>Key insight:</strong> Star ratings do not simply decrease with screen size — the system is designed to reward efficiency relative to size class.
+      </div>
+    </div>
+
+    <!-- Cost Table -->
+    <div class="section stats-section">
+      <h2>Estimated annual running cost by TV size</h2>
+      <p>The table below shows estimated annual electricity costs for common TV sizes and types based on 6 hours of use per day at the Australian average electricity rate of $0.30/kWh.</p>
       <table>
         <thead>
-          <tr>
-            <th>Screen size</th>
-            <th>Type</th>
-            <th>Watts</th>
-            <th>Est. annual cost (AUD)</th>
-          </tr>
+          <tr><th>Screen size</th><th>Type</th><th>Watts</th><th>Est. annual cost (AUD)</th></tr>
         </thead>
         <tbody>
           <tr><td>32 inch</td><td>LED</td><td>30W</td><td>~$17</td></tr>
@@ -123,32 +211,17 @@
           <tr><td>55 inch</td><td>OLED</td><td>110W</td><td>~$63</td></tr>
           <tr><td>65 inch</td><td>LED</td><td>100W</td><td>~$57</td></tr>
           <tr><td>65 inch</td><td>OLED</td><td>130W</td><td>~$75</td></tr>
+          <tr><td>75 inch</td><td>LED</td><td>150W</td><td>~$85</td></tr>
+          <tr><td>85 inch</td><td>LED</td><td>200W</td><td>~$114</td></tr>
         </tbody>
       </table>
-      <p class="table-note">Based on 6 hours use per day at $0.30/kWh (Australian average).</p>
     </div>
 
-    <div class="section stats-section">
-      <h2>TV energy tips</h2>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-num">6 hrs</div>
-          <div class="stat-label">Average daily TV use in Australia</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">10W</div>
-          <div class="stat-label">Standby power wasted when TV is off</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">$9/yr</div>
-          <div class="stat-label">Cost of leaving TV on standby</div>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <!-- About Page -->
+  <!-- ==================== ABOUT PAGE ==================== -->
   <div id="page-about" class="page hidden">
+
     <div class="hero">
       <h1>About this website</h1>
       <p>This website was built as part of COS30045 Data Visualisation at Swinburne University of Technology.</p>
@@ -156,19 +229,26 @@
 
     <div class="section">
       <h2>About the project</h2>
-      <p>This site is Exercise 0.2 of COS30045. It demonstrates a basic interactive webpage built with HTML, CSS, and JavaScript, using GitHub for version control.</p>
-      <br>
-      <p>Future exercises will add D3.js data visualisations to this site, hosted on Swinburne's Mercury server.</p>
+      <div class="about-row">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Data visualisation" class="about-img" onerror="this.style.display='none'">
+        <div>
+          <p>This site is Exercise 0.2 and Exercise 3 of COS30045 Data Visualisation. It demonstrates an interactive webpage built with HTML, CSS, JavaScript, and D3.js data visualisations hosted on Swinburne's Mercury server.</p>
+          <br>
+          <p>Data was sourced from the Australian Government energy rating dataset and cleaned using KNIME Analytics Platform before being visualised on this website using D3.js.</p>
+          <br>
+          <p>The website answers seven key research questions about TV energy consumption in the Australian market using interactive charts and visualisations.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="section">
+    <div class="section stats-section">
       <h2>About the developer</h2>
       <div class="about-card">
-        <div class="about-avatar">ME</div>
+        <div class="about-avatar">IS</div>
         <div>
-          <h3>Ismail Mehtiyev</h3>
+          <h3>Ismail</h3>
           <p>Student, Swinburne University of Technology</p>
-          <p>Unit: COS30045 Data Visualisation</p>
+          <p>Unit: COS30045 Data Visualisation — 2025</p>
         </div>
       </div>
     </div>
@@ -177,39 +257,49 @@
       <h2>About the data</h2>
       <div class="cards">
         <div class="card">
-          <div class="card-icon">📊</div>
+          <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80" alt="Data source" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>Data source</h3>
-            <p>The dataset contains information about television models and their energy consumption, provided as part of COS30045 course materials.</p>
+            <p>Australian Government energy rating dataset (tv_2026_03_26.csv) containing TV models sold in Australia with energy consumption, screen technology, and star rating details.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">🔧</div>
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80" alt="Data processing" onerror="this.style.display='none'">
           <div class="card-body">
             <h3>Data processing</h3>
-            <p>Data was cleaned and organised before visualisation, removing missing values and selecting relevant attributes for analysis.</p>
+            <p>Data was cleaned in KNIME — removing duplicates, filtering to available Australian models, standardising brand names, and converting screen sizes from cm to inches.</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-icon">⚖️</div>
+          <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80" alt="Ethics" onerror="this.style.display='none'">
           <div class="card-body">
-            <h3>Ethics</h3>
-            <p>All data is presented accurately and responsibly, avoiding misleading representations and clearly explaining context.</p>
+            <h3>Ethics and accuracy</h3>
+            <p>All data is presented accurately and responsibly. Visualisations avoid misleading scales or representations. Context is clearly explained throughout the website.</p>
           </div>
         </div>
       </div>
     </div>
 
+    <div class="section stats-section">
+      <h2>Tools used</h2>
+      <div class="stats">
+        <div class="stat"><div class="stat-num">D3.js</div><div class="stat-label">Data visualisation library</div></div>
+        <div class="stat"><div class="stat-num">KNIME</div><div class="stat-label">Data cleaning and processing</div></div>
+        <div class="stat"><div class="stat-num">GitHub</div><div class="stat-label">Version control and hosting</div></div>
+      </div>
+    </div>
+
     <div class="section">
       <h2>GenAI acknowledgement</h2>
-      <p>Parts of the code and content for this website were generated with the assistance of Claude (Anthropic) and GitHub Copilot. All generated code was reviewed, understood, and modified where necessary by the developer.</p>
+      <p>Parts of the code and content for this website were generated with the assistance of Claude (Anthropic) via claude.ai and GitHub Copilot. This includes HTML structure, CSS styling, JavaScript navigation, D3.js chart code, and written content. All generated code was reviewed, understood, and modified where necessary by the developer.</p>
     </div>
+
   </div>
 
   <footer>
-    <span>2026</span> &nbsp;|&nbsp;
-    <span>Ismail Mehtiyev</span> &nbsp;|&nbsp;
-    <span>GenAI used: Claude (Anthropic) assisted with code and content generation</span>
+    <span>2025</span> &nbsp;|&nbsp;
+    <span>Ismail — Swinburne University of Technology</span> &nbsp;|&nbsp;
+    <span>GenAI used: Claude (Anthropic) and GitHub Copilot</span>
   </footer>
 
   <script src="js/scripts.js"></script>
