@@ -1,149 +1,46 @@
 # COS30045 – Data Visualisation
-## Appliance Energy Consumption Website
+## TV Energy Consumption Website
+
+**Student ID:** s106407636  
+**University:** Swinburne University of Technology  
+**Year:** 2026
+
+**Exercise 3 Data Story Website:** http://mercury.swin.edu.au/cos30045/s106407636/exercise3/index.html
+
+**GitHub Repository:** https://github.com/Ismailloooll/COS30045-Data-Visualization-March
 
 ---
 
-## Exercise 0.2 – Build Appliance Energy Consumption Website
+## Data Story
 
-### Summary
-Built a small interactive website about appliance energy consumption in the Australian market using HTML, CSS, and JavaScript.
+This project presents a data story about television energy consumption in Australia, designed for researchers studying energy efficiency in consumer electronics. The story was built using HTML, CSS, JavaScript, and D3.js, with data sourced from the Australian Government energy rating dataset and cleaned using KNIME Analytics Platform.
 
-### Pages built
-- **Home** – Overview of household energy consumption in Australia with key facts and statistics
-- **Televisions** – Detailed information about TV energy consumption by type and size including a cost comparison table
-- **About Us** – Information about the project, developer, data source, data processing and ethics
+The target audience for this visualisation is researchers who require accurate, data-driven insights with appropriate context and statistical transparency. They are interested in understanding market-level patterns in TV energy consumption, identifying which technologies and brands dominate the Australian market, and exploring the physical factors that drive energy use in televisions.
 
-### Features implemented
-- Three page website with JavaScript navigation — no page reloads
-- Top navigation menu with active page highlighting
-- Mouse hover feedback on navigation links
-- Power logo in navigation that returns user to home page
-- Cards with icons for visual presentation
-- Statistics section with key energy facts
-- Data table showing estimated annual TV running costs
-- Footer with year, name and GenAI acknowledgement
-- CSS styling with green colour scheme
-- Responsive layout using CSS Grid
+The data story follows a structured narrative arc. It begins by introducing the issue — that TV energy consumption is a significant but often overlooked contributor to household electricity use in Australia. It then demonstrates the scale and diversity of the Australian TV market, showing how many models are available and which screen technologies dominate. From there it identifies which brands have the largest market presence and explores the relationship between screen size and power consumption. The story concludes with research recommendations based on the findings.
 
-### Tools used
-- HTML5
-- CSS3
-- JavaScript
-- Visual Studio Code
-- GitHub Desktop
-- Live Server extension for local testing
-
-### Folder structure
-```
-energy-webpage-v1/
-├── css/
-│   └── styles.css
-├── js/
-│   └── scripts.js
-├── images/
-│   └── PowerIcon.png
-├── data/
-│   └── data.csv
-├── index.html
-└── README.md
-```
+Three key findings are presented. The first finding is that LCD (LED) technology dominates the Australian TV market, accounting for over 80% of all currently available models. This has significant implications for research design, as any study of Australian TV energy consumption must account for this concentration. The second finding is that a small number of brands including Hisense, Samsung, LG, and Sony collectively dominate the available models in Australia. This market concentration means that policy interventions or research partnerships with just a handful of manufacturers could have an outsized effect on the overall energy efficiency of the market. The third finding is that screen size is a strong positive predictor of power consumption, with a clear relationship visible from 22-inch to 85-inch models. However, significant variation within each size category suggests that technology choices and manufacturing efficiency also play important roles beyond physical size alone.
 
 ---
 
-## Exercise 0.3 – Host Website on Mercury
+## About the Data
 
-### Summary
-Uploaded the energy consumption website to Swinburne's Mercury Apache server and confirmed it is accessible via browser.
+The dataset used in this project was published by the Australian Government and contains information about the energy consumption of televisions sold in Australia. The file tv_2026_03_26.csv was downloaded from the Australian Government energy rating website and contains over 5,000 rows covering TV models registered for sale in the Australian market across 32 columns including brand name, model number, screen technology, screen size in centimetres, average power consumption in watts, and energy star rating.
 
-### Steps completed
-- Activated COS30045 Mercury account using PuTTY
-- Connected to Mercury server using WinSCP
-- Uploaded all website files to the correct htdocs directory
-- Tested the website is accessible via browser
-- Confirmed the website is viewable with Swinburne login
+Before visualisation, the dataset was cleaned using KNIME Analytics Platform. Duplicate model entries were removed, keeping the most recent submission for each model. Rows with missing values in key columns were handled appropriately. The dataset was filtered to include only currently available models sold in Australia. Unnecessary columns were removed to focus the analysis on relevant attributes. Brand names were standardised to uppercase to resolve inconsistencies such as Samsung and SAMSUNG being treated as different brands. Screen size was converted from centimetres to inches and grouped into standard advertised size categories such as 32 inch, 55 inch, and 65 inch.
 
-### Live website link
-```
-http://mercury.swin.edu.au/cos30045/s106407636/energy-webpage-v1/index.html
-```
+The dataset contains no personal or sensitive information. It focuses solely on product specifications and energy consumption data related to television devices registered with the Australian Government energy rating scheme, meaning there are no privacy concerns associated with its use or publication.
 
-Note: Viewing this page requires a Swinburne University login (student ID and SIMS password).
+While the dataset provides useful information about TV energy consumption in Australia, there are some limitations to consider. The dataset may not include all available television models, and some information may be outdated or incomplete as registration data is updated periodically. Energy consumption in real-world conditions may also vary depending on factors such as brightness settings, content type, and ambient temperature, which are not captured in the dataset. These limitations should be considered when interpreting the visualisations presented on the website.
 
----
-
-## Exercise 1 – Data Processing with KNIME
-
-### Summary
-Used KNIME Analytics Platform to process and clean the Australian Government TV energy consumption dataset in preparation for data visualisation.
-
-### Dataset
-- Source: Australian Government TV energy consumption dataset
-- File: tv_2026_03_26.csv
-- Contains information about television models sold in Australia including brand, model, screen size, technology type, power consumption and star ratings
-
-### Workflow steps
-1. **CSV Reader** – Reads the TV energy dataset from CSV file
-2. **Duplicate Row Filter** – Removes duplicate TV models, keeps most recent entry based on Model_No
-3. **Missing Value** – Handles missing values in the dataset
-4. **Row Filter** – Keeps only TV models sold in Australia using regex filter on SoldIn column
-5. **Column Filter** – Removes unnecessary columns, keeps only relevant ones for analysis
-6. **Math Formula** – Converts screen size from centimetres to inches using formula: screensize / 2.54
-7. **Expression** – Groups screen sizes into standard advertised size categories (22, 27, 32, 43, 50, 55, 65, 75, 85 inch)
-
-### Questions the cleaned data can answer
-- What TV screen technologies are available in Australia and which are most frequent?
-- What screen sizes are available and which are most frequent?
-- Which brands have the largest number of models?
-- Which screen technology consumes the least power?
-- What is the relationship between screen size and power use?
-- What is the relationship between star rating and screen size?
-- Are there differences in power consumption between brands?
-
-### Files submitted
-- `Exercise_1.knwf` — annotated KNIME workflow file
-- `workflow_screenshot.png` — screenshot of the complete workflow
+This project follows ethical data visualisation practices throughout. All chart axes start at zero to avoid misleading visual comparisons. Data limitations are clearly disclosed on the website. The context of the data is explained so that viewers can interpret the results correctly. No personal data is presented or stored at any point.
 
 ---
 
 ## GenAI Declaration
 
-### Tools used
-- **Claude (Anthropic)** – Used via claude.ai
-- **GitHub Copilot** – Available through GitHub Education
-
-### How GenAI was used
-
-**Exercise 0.2 and 0.3:**
-- Generating the initial HTML structure and page layout
-- Writing and formatting CSS styles including navigation bar, cards, stats section and table
-- Writing JavaScript for page navigation and active link highlighting
-- Suggesting content and text for the energy consumption topic
-- Debugging issues such as CSS not loading due to incorrect file naming
-- Explaining how to set up folder structure and GitHub workflow
-- Providing step by step guidance for uploading files to Mercury server
-
-**Exercise 1:**
-- Explaining how to use KNIME nodes and configure settings
-- Suggesting the correct workflow order for data cleaning
-- Writing the nested if expression for screen size categories
-- Helping debug syntax errors in KNIME expressions
-- Explaining how to configure Row Filter, Duplicate Row Filter and Expression nodes
-
-### Reflection
-Using GenAI tools significantly sped up the development process, especially for repetitive tasks like writing CSS, setting up HTML structure, and configuring KNIME nodes. However, it was important to review and understand every piece of code and configuration generated, as some suggestions required modification to work correctly.
-
-For example, the CSS file was initially named incorrectly and had to be fixed manually. The KNIME Expression node required debugging as the syntax for nested if statements is different from standard programming. These experiences showed that GenAI does not always account for the specific environment or file structure of a project and requires careful review.
-
-Overall, GenAI was a useful assistant but not a replacement for understanding the work. All generated content was reviewed, tested, and modified where necessary.
-
-### Commits involving GenAI-generated code
-All commits in this repository involved code or configurations that were assisted or generated by GenAI tools. Key commits include:
-- Initial HTML structure and CSS styling
-- JavaScript navigation functionality
-- Content updates and bug fixes
-- KNIME workflow configuration and expression writing
+AI tools were used to help brainstorm ideas and suggest approaches during the development of this project. All code, content, and decisions were written and reviewed by the developer.
 
 ---
 
 *COS30045 Data Visualisation – Swinburne University of Technology – 2025*
-*Student ID: s106407636*
