@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Energy Consumption — Data Story</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo" onclick="showPage('home')">⚡</div>
+    <div class="nav-links">
+      <a href="#" id="nav-home" class="active" onclick="showPage('home')">Home</a>
+      <a href="#" id="nav-televisions" onclick="showPage('televisions')">Televisions</a>
+      <a href="#" id="nav-story" onclick="showPage('story')">Data Story</a>
+      <a href="#" id="nav-about" onclick="showPage('about')">About Us</a>
+    </div>
+  </nav>
+
+  <!-- ==================== HOME PAGE ==================== -->
+  <div id="page-home" class="page">
+    <div class="hero">
+      <h1>Appliance Energy Consumption in Australia</h1>
+      <p>Explore how everyday household appliances consume energy in Australian homes. Understanding energy usage helps reduce electricity bills and environmental impact.</p>
+    </div>
+    <div class="section">
+      <h2>Why energy consumption matters</h2>
+      <p>Australian households spend an average of $1,700 per year on electricity. Appliances account for a significant portion of this cost. Understanding which appliances use the most energy helps consumers make smarter, more sustainable choices.</p>
+      <div class="cards">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Australian house" onerror="this.style.display='none'">
+          <div class="card-body">
+            <h3>Average household</h3>
+            <p>An average Australian home uses around 18–20 kWh of electricity per day across all appliances.</p>
+          </div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&q=80" alt="Power lines" onerror="this.style.display='none'">
+          <div class="card-body">
+            <h3>Biggest energy users</h3>
+            <p>Heating and cooling, water heaters, and refrigerators are the top energy consumers in most homes.</p>
+          </div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&q=80" alt="Wind energy" onerror="this.style.display='none'">
+          <div class="card-body">
+            <h3>Reduce your bill</h3>
+            <p>Switching to energy-efficient appliances with high star ratings can cut energy costs by up to 30%.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section stats-section">
+      <h2>Quick facts</h2>
+      <div class="stats">
+        <div class="stat"><div class="stat-num">$1,700</div><div class="stat-label">Average annual electricity bill</div></div>
+        <div class="stat"><div class="stat-num">40%</div><div class="stat-label">Of bill from heating and cooling</div></div>
+        <div class="stat"><div class="stat-num">6 stars</div><div class="stat-label">Maximum energy star rating</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>About the energy star rating system</h2>
+      <div class="about-row">
+        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500&q=80" alt="Solar panels" class="about-img" onerror="this.style.display='none'">
+        <div>
+          <p>The Australian energy star rating system helps consumers compare the energy efficiency of appliances. More stars means more efficient. The system is mandatory for many appliances sold in Australia including televisions, refrigerators, and washing machines.</p>
+          <br>
+          <p>When shopping for a new TV, choosing a model with a higher star rating can save hundreds of dollars over the lifetime of the product while also reducing your household carbon footprint.</p>
+          <br>
+          <div class="tip-box"><strong>💡 Energy saving tip:</strong> Turning off your TV at the wall instead of leaving it on standby can save up to $9 per year per TV.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TELEVISIONS PAGE ==================== -->
+  <div id="page-televisions" class="page hidden">
+    <div class="hero">
+      <h1>Television Energy Consumption</h1>
+      <p>Explore interactive data visualisations showing TV energy consumption patterns across different technologies, sizes, and brands in Australia.</p>
+    </div>
+    <div class="section">
+      <h2>Q1: Screen technologies available in Australia</h2>
+      <p>Number of TV models by screen technology type. LCD (LED) is the dominant technology with 3,747 models.</p>
+      <div class="chart-container"><div id="loading-tech" class="loading">Loading chart...</div><svg id="chart-tech"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> LCD (LED) technology accounts for over 80% of available TV models in Australia.</div>
+    </div>
+    <div class="section stats-section">
+      <h2>Q2: Screen sizes available in Australia</h2>
+      <p>Distribution of TV screen sizes in the Australian market grouped into standard categories.</p>
+      <div class="chart-container"><div id="loading-size" class="loading">Loading chart...</div><svg id="chart-size"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> 55-inch and 65-inch TVs are the most commonly available sizes.</div>
+    </div>
+    <div class="section">
+      <h2>Q3: Brands with most TV models</h2>
+      <p>Top 20 brands by number of different TV models available in Australia.</p>
+      <div class="chart-container chart-container-tall"><div id="loading-brands" class="loading">Loading chart...</div><svg id="chart-brands"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> A small number of major brands dominate the Australian TV market.</div>
+    </div>
+    <div class="section stats-section">
+      <h2>Q4: Average power consumption by screen technology</h2>
+      <p>Average power consumption in watts for each screen technology type.</p>
+      <div class="chart-container"><div id="loading-power" class="loading">Loading chart...</div><svg id="chart-power"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> LCD (LED) technology has the lowest average power consumption.</div>
+    </div>
+    <div class="section">
+      <h2>TV technologies explained</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=400&q=80" alt="LED TV" onerror="this.style.display='none'">
+          <div class="card-body"><h3>LED / LCD TV</h3><p>Most common and energy efficient. A 55-inch LED TV uses around 60–80 watts.</p></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1567690187548-f07b1d7bf5a9?w=400&q=80" alt="OLED TV" onerror="this.style.display='none'">
+          <div class="card-body"><h3>OLED TV</h3><p>Superior picture quality. Uses around 80–120 watts for a 55-inch screen.</p></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Plasma TV" onerror="this.style.display='none'">
+          <div class="card-body"><h3>Plasma TV (legacy)</h3><p>Older technology using 150–300 watts. Most models discontinued.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="section stats-section">
+      <h2>Q5: Relationship between screen size and power use</h2>
+      <p>Scatter plot showing the relationship between screen size and power consumption.</p>
+      <div class="chart-container"><div id="loading-scatter" class="loading">Loading chart...</div><svg id="chart-scatter"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> Larger screens use more power, but variation shows some large TVs are much more efficient than others.</div>
+    </div>
+    <div class="section">
+      <h2>Q6: Average star rating by screen size</h2>
+      <p>Average energy star ratings across different screen size categories.</p>
+      <div class="chart-container"><div id="loading-star" class="loading">Loading chart...</div><svg id="chart-star"></svg></div>
+      <div class="chart-insight"><strong>Key insight:</strong> Star ratings do not simply decrease with screen size.</div>
+    </div>
+    <div class="section stats-section">
+      <h2>Estimated annual running cost by TV size</h2>
+      <table>
+        <thead><tr><th>Screen size</th><th>Type</th><th>Watts</th><th>Est. annual cost (AUD)</th></tr></thead>
+        <tbody>
+          <tr><td>32 inch</td><td>LED</td><td>30W</td><td>~$17</td></tr>
+          <tr><td>43 inch</td><td>LED</td><td>50W</td><td>~$28</td></tr>
+          <tr><td>55 inch</td><td>LED</td><td>75W</td><td>~$43</td></tr>
+          <tr><td>55 inch</td><td>OLED</td><td>110W</td><td>~$63</td></tr>
+          <tr><td>65 inch</td><td>LED</td><td>100W</td><td>~$57</td></tr>
+          <tr><td>65 inch</td><td>OLED</td><td>130W</td><td>~$75</td></tr>
+          <tr><td>75 inch</td><td>LED</td><td>150W</td><td>~$85</td></tr>
+          <tr><td>85 inch</td><td>LED</td><td>200W</td><td>~$114</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== DATA STORY PAGE ==================== -->
+  <div id="page-story" class="page hidden">
+
+    <div class="hero">
+      <h1>Data Story: TV Energy Consumption in Australia</h1>
+      <p>This data story is designed for <strong>researchers studying energy efficiency in consumer electronics</strong>. It presents three key findings from the Australian Government TV energy dataset.</p>
+    </div>
+
+    <!-- Audience -->
+    <div class="section">
+      <h2>Audience</h2>
+      <div class="audience-box">
+        <div class="audience-icon">🔬</div>
+        <div>
+          <h3>Researchers studying energy efficiency in consumer electronics</h3>
+          <p>This audience requires accurate, data-driven insights with appropriate context and statistical transparency. They are interested in market-level patterns, technology trends, and implications for policy and future research directions.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall storyboard -->
+    <div class="section stats-section">
+      <h2>Story overview</h2>
+      <p>The data story follows a structured narrative arc guiding the researcher from market overview to specific energy findings.</p>
+      <div class="storyboard">
+        <div class="story-card">
+          <div class="story-num">1</div>
+          <h4>Introduce the issue</h4>
+          <p>TV energy consumption is a significant but overlooked contributor to household electricity use in Australia.</p>
+        </div>
+        <div class="story-arrow">→</div>
+        <div class="story-card">
+          <div class="story-num">2</div>
+          <h4>Show the market</h4>
+          <p>Demonstrate scale and diversity — how many models exist and which technologies dominate.</p>
+        </div>
+        <div class="story-arrow">→</div>
+        <div class="story-card">
+          <div class="story-num">3</div>
+          <h4>Identify key players</h4>
+          <p>Show which brands have the largest market presence and how concentration affects research design.</p>
+        </div>
+        <div class="story-arrow">→</div>
+        <div class="story-card">
+          <div class="story-num">4</div>
+          <h4>Explore relationships</h4>
+          <p>Investigate the relationship between screen size and power consumption.</p>
+        </div>
+        <div class="story-arrow">→</div>
+        <div class="story-card">
+          <div class="story-num">5</div>
+          <h4>Draw conclusions</h4>
+          <p>Summarise findings and provide research recommendations.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FINDING 1 ===== -->
+    <div class="section">
+      <h2>Finding 1: LCD (LED) dominates the Australian TV market</h2>
+
+      <!-- Storyboard for this chart -->
+      <div class="chart-storyboard">
+        <div class="csb-card csb-question">
+          <div class="csb-label">Research question</div>
+          <p>What screen technologies are currently available in Australia and which are the most frequent?</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-data">
+          <div class="csb-label">Data needed</div>
+          <p><strong>Screen_Tech</strong> (categorical) and <strong>Count</strong> (integer) — grouped and counted using KNIME GroupBy node.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-chart">
+          <div class="csb-label">Chart type</div>
+          <p><strong>Bar chart</strong> — best for comparing counts across a small number of categories with clear labels.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-insight">
+          <div class="csb-label">Expected finding</div>
+          <p>LCD (LED) will dominate. Understanding market share informs how energy studies should weight technology types.</p>
+        </div>
+      </div>
+
+      <div class="story-finding">
+        <div class="finding-text">
+          <h3>Context</h3>
+          <p>Understanding the distribution of screen technologies is fundamental to any research into TV energy consumption. Technology type is a primary determinant of power consumption characteristics.</p>
+          <br>
+          <h3>What the data shows</h3>
+          <p>LCD (LED) technology accounts for 3,747 models — over 80% of all available TVs in Australia. OLED accounts for 293 models (6%) while traditional LCD accounts for 485 models (10%).</p>
+          <br>
+          <h3>Research implication</h3>
+          <p>Any research into Australian TV energy consumption must account for the overwhelming dominance of LCD (LED) technology. Stratified sampling is recommended when comparing technologies.</p>
+        </div>
+        <div class="finding-chart">
+          <div id="loading-story-tech" class="loading">Loading chart...</div>
+          <svg id="chart-story-tech"></svg>
+        </div>
+      </div>
+      <div class="chart-insight"><strong>Key finding:</strong> LCD (LED) represents over 80% of available TV models. Energy efficiency improvements in this technology would have the greatest population-level impact on household electricity consumption.</div>
+    </div>
+
+    <!-- ===== FINDING 2 ===== -->
+    <div class="section stats-section">
+      <h2>Finding 2: A small number of brands dominate the market</h2>
+
+      <!-- Storyboard for this chart -->
+      <div class="chart-storyboard">
+        <div class="csb-card csb-question">
+          <div class="csb-label">Research question</div>
+          <p>Which brands have the largest number of models available in the Australian market?</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-data">
+          <div class="csb-label">Data needed</div>
+          <p><strong>Brand_Reg</strong> (nominal, uppercase) and <strong>Count</strong> (integer) — grouped using KNIME GroupBy node.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-chart">
+          <div class="csb-label">Chart type</div>
+          <p><strong>Horizontal bar chart</strong> — horizontal orientation chosen because brand names are long strings that overlap on vertical axes.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-insight">
+          <div class="csb-label">Expected finding</div>
+          <p>A few major brands will dominate. This concentration means policy targeting a small number of brands could have outsized market impact.</p>
+        </div>
+      </div>
+
+      <div class="story-finding">
+        <div class="finding-text">
+          <h3>Context</h3>
+          <p>Brand concentration in consumer electronics markets has significant implications for energy efficiency research. When a small number of brands control the majority of models, their design choices disproportionately influence overall market energy consumption.</p>
+          <br>
+          <h3>What the data shows</h3>
+          <p>The Australian TV market shows significant brand concentration. The top brands including Hisense, Samsung, LG, and Sony collectively account for a substantial majority of available models.</p>
+          <br>
+          <h3>Research implication</h3>
+          <p>Researchers and policy makers should prioritise engagement with the top 5–10 brands. Changes to manufacturing standards for these brands would affect the majority of models available to Australian consumers.</p>
+        </div>
+        <div class="finding-chart">
+          <div id="loading-story-brands" class="loading">Loading chart...</div>
+          <svg id="chart-story-brands"></svg>
+        </div>
+      </div>
+      <div class="chart-insight"><strong>Key finding:</strong> Market concentration among top brands means targeted policy interventions with a small number of manufacturers could significantly improve the energy efficiency of the entire Australian TV market.</div>
+    </div>
+
+    <!-- ===== FINDING 3 ===== -->
+    <div class="section">
+      <h2>Finding 3: Screen size is a strong predictor of power consumption</h2>
+
+      <!-- Storyboard for this chart -->
+      <div class="chart-storyboard">
+        <div class="csb-card csb-question">
+          <div class="csb-label">Research question</div>
+          <p>What is the relationship between screen size and power consumption across available TV models?</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-data">
+          <div class="csb-label">Data needed</div>
+          <p><strong>Screen_Size_Inches</strong> (continuous) and <strong>Avg_mode_power</strong> (continuous) — used directly from cleaned dataset.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-chart">
+          <div class="csb-label">Chart type</div>
+          <p><strong>Scatter plot</strong> — ideal for showing relationships between two continuous variables. Each point represents a size category.</p>
+        </div>
+        <div class="csb-arrow">→</div>
+        <div class="csb-card csb-insight">
+          <div class="csb-label">Expected finding</div>
+          <p>Positive correlation between size and power. Variation within categories will reveal efficiency differences beyond just size.</p>
+        </div>
+      </div>
+
+      <div class="story-finding">
+        <div class="finding-text">
+          <h3>Context</h3>
+          <p>Understanding the physical determinants of TV power consumption is essential for developing accurate energy consumption models. Screen size represents the primary physical characteristic that researchers and consumers can observe and compare.</p>
+          <br>
+          <h3>What the data shows</h3>
+          <p>There is a clear positive relationship between screen size and power consumption. As screen diagonal increases from 22 to 85 inches, power consumption increases substantially. However significant variation within each size category indicates technology and manufacturing efficiency also play important roles.</p>
+          <br>
+          <h3>Research implication</h3>
+          <p>Screen size should be included as a covariate in any statistical model of TV energy consumption. Researchers should investigate which design factors explain the within-category variation.</p>
+        </div>
+        <div class="finding-chart">
+          <div id="loading-story-scatter" class="loading">Loading chart...</div>
+          <svg id="chart-story-scatter"></svg>
+        </div>
+      </div>
+      <div class="chart-insight"><strong>Key finding:</strong> Screen size is a strong positive predictor of power consumption, but significant within-size variation suggests technology choices and manufacturing efficiency are also important factors.</div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="section stats-section">
+      <h2>Conclusions and research recommendations</h2>
+      <div class="conclusion-grid">
+        <div class="conclusion-card">
+          <div class="conclusion-icon">📊</div>
+          <h3>Market structure</h3>
+          <p>The Australian TV market is dominated by LCD (LED) technology and a small number of major brands. Research designs should account for this concentration to avoid sampling bias.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-icon">🔋</div>
+          <h3>Energy drivers</h3>
+          <p>Screen size is a primary driver of power consumption but does not fully explain variation. Future research should investigate panel efficiency, backlighting technology, and smart TV features.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-icon">🎯</div>
+          <h3>Policy targeting</h3>
+          <p>Engaging with the top 5–10 brands and focusing on LCD (LED) efficiency improvements would have the greatest impact given their market dominance.</p>
+        </div>
+        <div class="conclusion-card">
+          <div class="conclusion-icon">📋</div>
+          <h3>Data limitations</h3>
+          <p>The dataset may not include all available models and energy consumption may vary with real-world usage. Longitudinal studies would strengthen these findings.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About the data -->
+    <div class="section">
+      <h2>About the data</h2>
+      <div class="data-info-grid">
+        <div class="data-info-card">
+          <h3>Data source</h3>
+          <p>Australian Government energy rating dataset (tv_2026_03_26.csv). Contains TV models registered for sale in Australia including brand, screen technology, screen size, power consumption, and energy star rating.</p>
+        </div>
+        <div class="data-info-card">
+          <h3>Data processing</h3>
+          <p>Cleaned using KNIME — removing duplicates, filtering to available Australian models, standardising brand names to uppercase, and converting screen size from centimetres to inches.</p>
+        </div>
+        <div class="data-info-card">
+          <h3>Privacy</h3>
+          <p>The dataset contains no personal or sensitive information. It focuses solely on product specifications and energy consumption data.</p>
+        </div>
+        <div class="data-info-card">
+          <h3>Accuracy and limitations</h3>
+          <p>The dataset may not include all available TV models. Energy consumption may vary depending on real-world usage conditions such as brightness settings and content type.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== ABOUT PAGE ==================== -->
+  <div id="page-about" class="page hidden">
+    <div class="hero">
+      <h1>About this website</h1>
+      <p>This website was built as part of COS30045 Data Visualisation at Swinburne University of Technology.</p>
+    </div>
+    <div class="section">
+      <h2>About the project</h2>
+      <div class="about-row">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" alt="Data visualisation" class="about-img" onerror="this.style.display='none'">
+        <div>
+          <p>This site is Exercise 0.2 and Exercise 3 of COS30045 Data Visualisation. It demonstrates an interactive webpage built with HTML, CSS, JavaScript, and D3.js data visualisations hosted on Swinburne's Mercury server.</p>
+          <br>
+          <p>Data was sourced from the Australian Government energy rating dataset and cleaned using KNIME Analytics Platform before being visualised on this website using D3.js.</p>
+        </div>
+      </div>
+    </div>
+    <div class="section stats-section">
+      <h2>About the developer</h2>
+      <div class="about-card">
+        <div class="about-avatar">IS</div>
+        <div>
+          <h3>Ismail</h3>
+          <p>Student, Swinburne University of Technology</p>
+          <p>Unit: COS30045 Data Visualisation — 2026</p>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>About the data</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80" alt="Data source" onerror="this.style.display='none'">
+          <div class="card-body"><h3>Data source</h3><p>Australian Government energy rating dataset containing TV models sold in Australia.</p></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80" alt="Data processing" onerror="this.style.display='none'">
+          <div class="card-body"><h3>Data processing</h3><p>Cleaned in KNIME — removing duplicates, filtering, standardising brand names, converting screen sizes.</p></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80" alt="Ethics" onerror="this.style.display='none'">
+          <div class="card-body"><h3>Ethics</h3><p>All data presented accurately and responsibly. Visualisations avoid misleading representations.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="section stats-section">
+      <h2>Tools used</h2>
+      <div class="stats">
+        <div class="stat"><div class="stat-num">D3.js</div><div class="stat-label">Data visualisation library</div></div>
+        <div class="stat"><div class="stat-num">KNIME</div><div class="stat-label">Data cleaning and processing</div></div>
+        <div class="stat"><div class="stat-num">GitHub</div><div class="stat-label">Version control and hosting</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>GenAI acknowledgement</h2>
+      <p>Parts of the code and content for this website were generated with the assistance of Claude (Anthropic) via claude.ai and GitHub Copilot. All generated code was reviewed, understood, and modified where necessary by the developer.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>2026</span> &nbsp;|&nbsp;
+    <span>Ismail — Swinburne University of Technology</span> &nbsp;|&nbsp;
+    <span></span>
+  </footer>
+
+  <script src="js/scripts.js"></script>
+</body>
+</html>
