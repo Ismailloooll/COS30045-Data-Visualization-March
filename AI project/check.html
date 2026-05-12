@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Route-Finding Visualizer — COS30019 Assignment 2A</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --surface: #161a2e;
+    --surface-2: #1d2240;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #ffffff;
+    --text-dim: #b8bdd4;
+    --text-muted: #8891b3;
+    --accent: #7c8cff;
+    --accent-2: #a78bfa;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --c-unvisited: #2a2f4a;
+    --c-unvisited-border: #3d4270;
+    --c-frontier: #38bdf8;
+    --c-frontier-glow: rgba(56,189,248,0.4);
+    --c-expanded: #f59e0b;
+    --c-expanded-glow: rgba(245,158,11,0.4);
+    --c-path: #22c55e;
+    --c-path-glow: rgba(34,197,94,0.5);
+    --c-goal: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    overflow: hidden;
+  }
+  .app { display: grid; grid-template-columns: 320px 1fr 320px; height: 100vh; }
+  aside { background: var(--surface); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+  aside.right { border-right: none; border-left: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 16px; }
+  .brand h1 { font-size: 15px; font-weight: 600; }
+  .brand p { font-size: 11px; color: #ffffff; opacity: 0.65; margin-top: 1px; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; margin-bottom: 8px; opacity: 0.85; }
+  select, button, input[type="text"], input[type="number"] { width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-2); font-size: 13px; font-family: inherit; color: var(--text); outline: none; transition: border-color 0.15s, background 0.15s; }
+  select:hover, input:hover { border-color: var(--accent); }
+  select:focus, input:focus { border-color: var(--accent); background: var(--surface); }
+  button { cursor: pointer; font-weight: 500; background: linear-gradient(180deg, var(--accent), #5d6dff); border: none; color: #fff; }
+  button:hover { filter: brightness(1.1); }
+  button.secondary { background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text); }
+  button.secondary:hover { background: var(--surface); border-color: var(--accent); }
+  button.icon-btn { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .edit-toggle { margin-top: 10px; }
+  .edit-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .edit-switch input { display: none; }
+  .edit-slider {
+    position: relative;
+    width: 34px; height: 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .edit-slider::after {
+    content: '';
+    position: absolute;
+    left: 2px; top: 1px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: left 0.2s, background 0.2s;
+  }
+  .edit-switch input:checked + .edit-slider {
+    background: rgba(124,140,255,0.25);
+    border-color: var(--accent);
+  }
+  .edit-switch input:checked + .edit-slider::after {
+    left: 17px;
+    background: var(--accent);
+  }
+  .edit-label-text { font-size: 12px; color: var(--text); font-weight: 500; }
+  .edit-hint {
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    background: rgba(124,140,255,0.08);
+    border: 1px solid rgba(124,140,255,0.25);
+    border-radius: 8px;
+  }
+  .edit-hint strong { color: var(--accent); font-weight: 600; }
+  .stage.mode-edit svg { cursor: crosshair; }
+  .label-tiny { font-size: 10px; color: #ffffff; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .err-msg { color: var(--danger); font-size: 11px; margin-top: 6px; min-height: 14px; }
+  .run-btn { width: 100%; padding: 12px; font-size: 14px; font-weight: 600; margin-top: 6px; background: linear-gradient(180deg, var(--success), #15803d); }
+  .result-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--c-path);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-title-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--c-path);
+    box-shadow: 0 0 8px var(--c-path-glow);
+  }
+  .result-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: "SF Mono", Monaco, "Consolas", monospace;
+    font-size: 12px;
+    line-height: 1.9;
+  }
+  .result-panel-hero {
+    background: linear-gradient(180deg, rgba(34,197,94,0.08), rgba(34,197,94,0.02));
+    border: 1.5px solid rgba(34,197,94,0.45);
+    box-shadow:
+      0 0 0 1px rgba(34,197,94,0.15),
+      0 8px 24px rgba(34,197,94,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .result-label { color: var(--text-dim); font-size: 11px; }
+  .result-panel-hero .result-label { color: var(--text-dim); }
+  .result-value { color: var(--text); font-weight: 700; }
+  .result-panel-hero .result-value {
+    color: #fff;
+    font-size: 15px;
+    text-shadow: 0 0 8px rgba(124,140,255,0.5);
+  }
+  .result-path {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(34,197,94,0.25);
+    word-break: break-all;
+    color: var(--c-path);
+    line-height: 1.6;
+    font-weight: 600;
+  }
+  .result-panel-hero .result-path {
+    font-size: 14px;
+    text-shadow: 0 0 10px var(--c-path-glow);
+    letter-spacing: 0.3px;
+  }
+  .result-none {
+    text-align: center;
+    color: var(--danger);
+    padding: 14px 0;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 13px;
+    text-shadow: 0 0 8px rgba(239,68,68,0.4);
+  }
+  .result-hint {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 14px 0;
+    font-style: italic;
+    font-size: 11px;
+  }
+  .playback-bar { display: grid; grid-template-columns: 40px 40px 1fr 40px 40px; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .speed-container { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .stage { position: relative; background: radial-gradient(circle at 20% 20%, rgba(124,140,255,0.08), transparent 40%), radial-gradient(circle at 80% 80%, rgba(167,139,250,0.08), transparent 40%), var(--bg); overflow: hidden; }
+  .stage svg { display: block; width: 100%; height: 100%; }
+  .status-bar { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(22,26,46,0.9); backdrop-filter: blur(10px); border: 1px solid var(--border-strong); border-radius: 999px; padding: 8px 18px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px currentColor; }
+  .legend { position: absolute; bottom: 16px; left: 16px; background: rgba(22,26,46,0.9); backdrop-filter: blur(10px); border: 1px solid var(--border-strong); border-radius: 10px; padding: 10px 14px; font-size: 11px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid transparent; }
+  .tree-container { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; height: 220px; overflow: auto; }
+  .event-log { font-family: "SF Mono", Monaco, monospace; font-size: 11px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; max-height: 340px; overflow-y: auto; line-height: 1.8; }
+  .ev-expand { color: var(--c-expanded); }
+  .ev-add { color: var(--c-frontier); }
+  .ev-iter { color: var(--accent-2); font-weight: 600; margin-top: 4px; }
+  .ev-goal { color: var(--c-path); font-weight: 600; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  .edge-line { stroke: rgba(255,255,255,0.18); stroke-width: 2; fill: none; transition: stroke 0.25s ease, stroke-width 0.25s ease, opacity 0.25s ease; }
+  .edge-line.explored { stroke: var(--c-expanded); stroke-width: 2.5; opacity: 0.9; filter: drop-shadow(0 0 4px var(--c-expanded-glow)); }
+  .edge-line.path { stroke: var(--c-path); stroke-width: 3.5; filter: drop-shadow(0 0 6px var(--c-path-glow)); }
+  .edge-cost { fill: var(--text-dim); font-size: 11px; font-family: "SF Mono", Monaco, monospace; paint-order: stroke; stroke: var(--bg); stroke-width: 4; stroke-linejoin: round; pointer-events: none; }
+  .node-circle { stroke-width: 2.5; transition: fill 0.25s, stroke 0.25s; }
+  .node-label { fill: #fff; font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .node-unvisited { fill: var(--c-unvisited); stroke: var(--c-unvisited-border); }
+  .node-frontier { fill: var(--c-frontier); stroke: #0ea5e9; filter: drop-shadow(0 0 8px var(--c-frontier-glow)); }
+  .node-expanded { fill: var(--c-expanded); stroke: #d97706; filter: drop-shadow(0 0 8px var(--c-expanded-glow)); }
+  .node-path { fill: var(--c-path); stroke: #15803d; filter: drop-shadow(0 0 10px var(--c-path-glow)); }
+  .node-goal-ring { fill: none; stroke: var(--c-goal); stroke-width: 2.5; stroke-dasharray: 3 3; }
+  .node-origin-ring { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 4 2; opacity: 0.7; }
+  .node-current { stroke: #fff !important; stroke-width: 4 !important; }
+  .node-tag { fill: var(--text-dim); font-size: 9px; font-family: "SF Mono", monospace; font-weight: 600; text-anchor: middle; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="logo">R</div>
+      <div>
+        <h1>Route-Finding Visualizer</h1>
+        <p>COS30019 · Assignment 2A</p>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Map</div>
+      <select id="mapSelect">
+        <option value="Map1">Map 1 (from assignment)</option>
+        <option value="Map2">Map 2 (from assignment)</option>
+        <option value="Map3">Map 3 (from assignment)</option>
+        <option value="Map4">Map 4 — Trap (heuristic misleads DFS)</option>
+        <option value="Map5">Map 5 — One-way streets</option>
+        <option value="Map6">Map 6 — Grid (4×4)</option>
+        <option value="Map7">Map 7 — Linear chain</option>
+        <option value="Map8">Map 8 — Multiple goals</option>
+        <option value="Map9">Map 9 — Disconnected halves</option>
+        <option value="Map10">Map 10 — Dense cycles</option>
+      </select>
+      <div class="edit-toggle">
+        <label class="edit-switch">
+          <input type="checkbox" id="editToggle">
+          <span class="edit-slider"></span>
+          <span class="edit-label-text">Edit graph</span>
+        </label>
+      </div>
+      <div class="edit-hint" id="editHint" style="display:none">
+        <strong>Click</strong> empty space to add a node.<br>
+        <strong>Click one node, then another</strong> to add an edge.<br>
+        <strong>Right-click</strong> a node or edge to delete.
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Algorithm</div>
+      <select id="algoSelect">
+        <option value="DFS">DFS — Depth-First Search</option>
+        <option value="BFS">BFS — Breadth-First Search</option>
+        <option value="GBFS">GBFS — Greedy Best-First</option>
+        <option value="AS" selected>AS — A* Search</option>
+        <option value="CUS1">CUS1 — Iterative Deepening (IDS)</option>
+        <option value="CUS2">CUS2 — Iterative Deepening A* (IDA*)</option>
+      </select>
+    </div>
+    <div class="section">
+      <div class="section-title">Start and end nodes</div>
+      <div class="input-pair">
+        <div>
+          <div class="label-tiny">Start (origin)</div>
+          <input type="number" id="originInput" value="1" min="1">
+        </div>
+        <div>
+          <div class="label-tiny">End (destination)</div>
+          <input type="number" id="destInput" value="5" min="1">
+        </div>
+      </div>
+      <div class="err-msg" id="inputErr"></div>
+    </div>
+    <div class="section">
+      <button class="run-btn" id="runBtn">Find path</button>
+    </div>
+    <div class="section">
+      <div class="section-title">Playback</div>
+      <div class="playback-bar">
+        <button class="secondary icon-btn" id="resetBtn" title="Reset">⟲</button>
+        <button class="secondary icon-btn" id="stepBackBtn" title="Step back">⏮</button>
+        <button class="icon-btn" id="playBtn" title="Play/Pause" style="background:linear-gradient(180deg,#22c55e,#15803d)">▶</button>
+        <button class="secondary icon-btn" id="stepBtn" title="Step forward">⏭</button>
+        <button class="secondary icon-btn" id="finishBtn" title="Skip to end">⏭⏭</button>
+      </div>
+      <div class="speed-container">
+        <span>Slow</span>
+        <input type="range" min="1" max="10" value="6" id="speedSlider">
+        <span>Fast</span>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Event log</div>
+      <div class="event-log" id="eventLog"></div>
+    </div>
+  </aside>
+  <main class="stage" id="stage">
+    <div class="status-bar" id="statusBar">
+      <span class="status-dot"></span>
+      <span id="statusText">Ready</span>
+    </div>
+    <svg id="mapSvg"></svg>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--c-unvisited);border-color:var(--c-unvisited-border)"></span>Unvisited</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--c-frontier);border-color:#0ea5e9"></span>Frontier</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--c-expanded);border-color:#d97706"></span>Expanded</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--c-path);border-color:#15803d"></span>On final path</div>
+      <div class="legend-item"><span class="legend-dot" style="background:none;border-color:var(--c-goal)"></span>Destination</div>
+    </div>
+  </main>
+  <aside class="right">
+    <div class="section">
+      <div class="section-title">Search tree</div>
+      <div class="tree-container"><svg id="treeSvg" style="width:100%;height:220px"></svg></div>
+    </div>
+    <div class="section">
+      <div class="result-title">
+        <span class="result-title-dot"></span>
+        Output (assignment format)
+      </div>
+      <div class="result-panel result-panel-hero" id="resultPanel">
+        <div class="result-hint">Press "Find path" to run the search.</div>
+      </div>
+    </div>
+  </aside>
+</div>
+<script>
+// ============================================================================
+// MAPS — the three assignment maps, hardcoded from the provided .txt files
+// ============================================================================
+const MAPS = {
+  Map1: {
+    nodes: {1:[1,4], 2:[4,10], 3:[9,11], 4:[6,7], 5:[13,9], 6:[5,4], 7:[9,6]},
+    edges: [[1,2,9],[1,4,7],[1,6,5],[2,3,6],[2,4,5],[3,2,6],[3,5,5],[3,7,6],[4,1,7],[4,2,5],[4,6,4],[5,3,7],[5,6,10],[5,7,7],[6,1,5],[6,4,4],[6,5,10],[7,3,6],[7,4,5],[7,5,7]],
+    defaultOrigin: 1, defaultDest: 5,
+  },
+  Map2: {
+    nodes: {1:[2,6], 2:[4,11], 3:[4,1], 4:[8,12], 5:[9,1], 6:[6,9], 7:[11,3], 8:[15,7], 9:[16,3], 10:[18,10], 11:[22,6]},
+    edges: [[1,2,7],[2,1,7],[1,3,6],[3,1,6],[1,6,6],[6,1,6],[2,4,5],[3,5,5],[5,3,5],[4,6,4],[6,4,4],[4,8,10],[8,4,10],[4,10,17],[10,4,17],[5,7,3],[7,5,3],[6,7,9],[7,8,7],[8,7,7],[7,9,5],[9,7,5],[8,9,6],[9,8,5],[8,10,6],[10,8,6],[9,10,8],[10,9,8],[9,11,9],[11,9,9],[10,11,6],[11,10,6]],
+    defaultOrigin: 1, defaultDest: 11,
+  },
+  Map3: {
+    nodes: {1:[1,10], 2:[6,9], 3:[4,3], 4:[11,8], 5:[9,3], 6:[15,12], 7:[18,5], 8:[14,1]},
+    edges: [[1,2,6],[2,1,6],[1,3,9],[3,1,9],[2,3,8],[3,2,8],[2,4,7],[4,2,7],[2,5,8],[5,2,8],[3,5,5],[5,3,5],[4,5,6],[5,4,6],[4,6,6],[6,4,6],[4,8,9],[8,4,9],[5,8,7],[8,5,7],[6,8,13],[8,6,13],[7,6,8],[7,8,7]],
+    defaultOrigin: 2, defaultDest: 7,
+  },
+  // Map 4 — Trap map: upper corridor looks attractive to heuristic but is expensive
+  Map4: {
+    nodes: {1:[0,0], 2:[1,5], 3:[3,8], 4:[5,5], 5:[6,2], 6:[10,0], 7:[2,0], 8:[4,0], 9:[7,0]},
+    edges: [
+      [1,2,2],[2,1,2], [2,3,3],[3,2,3], [3,4,4],[4,3,4], [4,5,5],[5,4,5], [5,6,6],[6,5,6],
+      [1,7,3],[7,1,3], [7,8,3],[8,7,3], [8,9,3],[9,8,3], [9,6,3],[6,9,3],
+    ],
+    defaultOrigin: 1, defaultDest: 6,
+  },
+  // Map 5 — Directed edges (one-way streets); BFS and A* produce different paths
+  Map5: {
+    nodes: {1:[0,0], 2:[2,2], 3:[4,2], 4:[2,-2], 5:[6,0]},
+    edges: [[1,2,4], [1,4,3],[4,1,3], [2,3,2], [3,5,3], [4,3,5], [4,5,8], [5,3,3]],
+    defaultOrigin: 1, defaultDest: 5,
+  },
+  // Map 6 — 4x4 grid, fully connected horizontally/vertically
+  Map6: {
+    nodes: {1:[0,0],2:[1,0],3:[2,0],4:[3,0], 5:[0,1],6:[1,1],7:[2,1],8:[3,1],
+      9:[0,2],10:[1,2],11:[2,2],12:[3,2], 13:[0,3],14:[1,3],15:[2,3],16:[3,3]},
+    edges: [
+      [1,2,1],[2,1,1],[2,3,1],[3,2,1],[3,4,1],[4,3,1],
+      [5,6,1],[6,5,1],[6,7,1],[7,6,1],[7,8,1],[8,7,1],
+      [9,10,1],[10,9,1],[10,11,1],[11,10,1],[11,12,1],[12,11,1],
+      [13,14,1],[14,13,1],[14,15,1],[15,14,1],[15,16,1],[16,15,1],
+      [1,5,1],[5,1,1],[2,6,1],[6,2,1],[3,7,1],[7,3,1],[4,8,1],[8,4,1],
+      [5,9,1],[9,5,1],[6,10,1],[10,6,1],[7,11,1],[11,7,1],[8,12,1],[12,8,1],
+      [9,13,1],[13,9,1],[10,14,1],[14,10,1],[11,15,1],[15,11,1],[12,16,1],[16,12,1],
+    ],
+    defaultOrigin: 1, defaultDest: 16,
+  },
+  // Map 7 — Linear chain of 10 nodes
+  Map7: {
+    nodes: {1:[0,0],2:[1,0],3:[2,0],4:[3,0],5:[4,0],6:[5,0],7:[6,0],8:[7,0],9:[8,0],10:[9,0]},
+    edges: [
+      [1,2,1],[2,1,1],[2,3,1],[3,2,1],[3,4,1],[4,3,1],[4,5,1],[5,4,1],[5,6,1],[6,5,1],
+      [6,7,1],[7,6,1],[7,8,1],[8,7,1],[8,9,1],[9,8,1],[9,10,1],[10,9,1],
+    ],
+    defaultOrigin: 1, defaultDest: 10,
+  },
+  // Map 8 — Multiple goals on opposite sides
+  Map8: {
+    nodes: {1:[7,5], 2:[5,8], 3:[5,2], 4:[9,8], 5:[9,2], 6:[2,5], 7:[12,5], 8:[14,8], 9:[14,2]},
+    edges: [
+      [1,2,4],[2,1,4], [1,3,4],[3,1,4], [2,4,4],[4,2,4], [3,5,4],[5,3,4],
+      [4,5,6],[5,4,6], [2,6,4],[6,2,4], [3,6,4],[6,3,4],
+      [4,7,4],[7,4,4], [5,7,4],[7,5,4], [7,8,4],[8,7,4], [7,9,4],[9,7,4],
+    ],
+    defaultOrigin: 1, defaultDest: 8,
+  },
+  // Map 9 — Two disconnected halves; left half reachable, right half not
+  Map9: {
+    nodes: {1:[0,0], 2:[2,1], 3:[4,0], 4:[3,-2], 5:[6,1], 6:[10,10], 7:[12,11], 8:[13,9], 9:[14,12]},
+    edges: [
+      [1,2,3],[2,1,3], [2,3,4],[3,2,4], [2,4,5],[4,2,5], [3,5,5],[5,3,5], [4,5,6],[5,4,6],
+      [6,7,2],[7,6,2], [7,8,3],[8,7,3], [8,9,2],[9,8,2], [6,9,4],[9,6,4],
+    ],
+    defaultOrigin: 1, defaultDest: 5,
+  },
+  // Map 10 — Dense graph with many cycles
+  Map10: {
+    nodes: {1:[0,0], 2:[2,2], 3:[4,0], 4:[2,-2], 5:[6,2], 6:[6,-2], 7:[8,0]},
+    edges: [
+      [1,2,2],[2,1,2], [1,4,2],[4,1,2], [2,3,2],[3,2,2], [3,4,2],[4,3,2],
+      [2,4,3],[4,2,3], [3,5,3],[5,3,3], [3,6,3],[6,3,3], [5,6,2],[6,5,2],
+      [5,7,3],[7,5,3], [6,7,3],[7,6,3],
+    ],
+    defaultOrigin: 1, defaultDest: 7,
+  },
+};
+
+let currentMapKey = 'Map1';
+let currentMapData = JSON.parse(JSON.stringify(MAPS[currentMapKey]));
+let originNode = currentMapData.defaultOrigin;
+let destNode = currentMapData.defaultDest;
+let editMode = false;
+let editLinkingFrom = null;  // node id when user has clicked one node and is picking the second
+
+function getMap() {
+  return { origin: originNode, destinations: [destNode], nodes: currentMapData.nodes, edges: currentMapData.edges };
+}
+
+function buildAdj(m) {
+  const adj = {};
+  for (const id of Object.keys(m.nodes)) adj[id] = [];
+  for (const [a,b,c] of m.edges) { if (!adj[a]) adj[a] = []; adj[a].push([b,c]); }
+  for (const k of Object.keys(adj)) adj[k].sort((a,b) => a[0]-b[0]);
+  return adj;
+}
+function heuristic(n, goals, nodes) {
+  const [x1,y1] = nodes[n];
+  let best = Infinity;
+  for (const g of goals) { const [x2,y2] = nodes[g]; const d = Math.hypot(x1-x2, y1-y2); if (d < best) best = d; }
+  return best;
+}
+function reconstruct(parent, end) {
+  const p = [end];
+  while (parent[p[p.length-1]] !== null && parent[p[p.length-1]] !== undefined) p.push(parent[p[p.length-1]]);
+  p.reverse();
+  return p;
+}
+function pathCost(path, adj) {
+  let t = 0;
+  for (let i = 0; i < path.length-1; i++) {
+    for (const [nb,c] of (adj[path[i]]||[])) if (nb == path[i+1]) { t += c; break; }
+  }
+  return t;
+}
+
+// --- algorithms ---
+function dfs(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[], stack=[origin], parent={[origin]:null}, visited=new Set();
+  let created=1;
+  trace.push({type:'add', node:origin, parent:null});
+  while (stack.length) {
+    const node=stack.pop();
+    if (visited.has(node)) continue;
+    visited.add(node);
+    trace.push({type:'expand', node});
+    if (goals.has(node)) { const path=reconstruct(parent,node); trace.push({type:'goal',node,path}); return {goal:node,path,cost:pathCost(path,adj),created,trace}; }
+    const nbs=(adj[node]||[]).slice().sort((a,b)=>a[0]-b[0]);
+    for (let i=nbs.length-1;i>=0;i--) { const nb=String(nbs[i][0]); if (!visited.has(nb)&&!(nb in parent)) { parent[nb]=node; stack.push(nb); created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); } }
+  }
+  return {goal:null,path:[],cost:0,created,trace};
+}
+function bfs(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[], queue=[origin], parent={[origin]:null}, visited=new Set();
+  let created=1;
+  trace.push({type:'add',node:origin,parent:null});
+  while (queue.length) {
+    const node=queue.shift();
+    if (visited.has(node)) continue;
+    visited.add(node);
+    trace.push({type:'expand',node});
+    if (goals.has(node)) { const path=reconstruct(parent,node); trace.push({type:'goal',node,path}); return {goal:node,path,cost:pathCost(path,adj),created,trace}; }
+    for (const [nbN] of (adj[node]||[])) { const nb=String(nbN); if (!visited.has(nb)&&!(nb in parent)) { parent[nb]=node; queue.push(nb); created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); } }
+  }
+  return {goal:null,path:[],cost:0,created,trace};
+}
+function gbfs(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[];
+  let counter=0;
+  const pq=[{h:heuristic(origin,m.destinations,m.nodes),id:parseInt(origin),ord:counter,node:origin}];
+  const parent={[origin]:null}, visited=new Set();
+  let created=1;
+  trace.push({type:'add',node:origin,parent:null});
+  while (pq.length) {
+    let bi=0;
+    for (let i=1;i<pq.length;i++) { const a=pq[i],b=pq[bi]; if (a.h<b.h||(a.h===b.h&&a.id<b.id)||(a.h===b.h&&a.id===b.id&&a.ord<b.ord)) bi=i; }
+    const {node}=pq.splice(bi,1)[0];
+    if (visited.has(node)) continue;
+    visited.add(node);
+    trace.push({type:'expand',node});
+    if (goals.has(node)) { const path=reconstruct(parent,node); trace.push({type:'goal',node,path}); return {goal:node,path,cost:pathCost(path,adj),created,trace}; }
+    for (const [nbN] of (adj[node]||[])) { const nb=String(nbN); if (visited.has(nb)||nb in parent) continue; parent[nb]=node; counter++; pq.push({h:heuristic(nb,m.destinations,m.nodes),id:nbN,ord:counter,node:nb}); created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); }
+  }
+  return {goal:null,path:[],cost:0,created,trace};
+}
+function astar(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[];
+  let counter=0;
+  const pq=[{f:heuristic(origin,m.destinations,m.nodes),g:0,id:parseInt(origin),ord:counter,node:origin}];
+  const parent={[origin]:null}, bestG={[origin]:0}, closed=new Set();
+  let created=1;
+  trace.push({type:'add',node:origin,parent:null});
+  while (pq.length) {
+    let bi=0;
+    for (let i=1;i<pq.length;i++) { const a=pq[i],b=pq[bi]; if (a.f<b.f||(a.f===b.f&&a.id<b.id)||(a.f===b.f&&a.id===b.id&&a.ord<b.ord)) bi=i; }
+    const {node,g}=pq.splice(bi,1)[0];
+    if (closed.has(node)) continue;
+    if (g > (bestG[node] ?? Infinity)) continue;
+    closed.add(node);
+    trace.push({type:'expand',node});
+    if (goals.has(node)) { const path=reconstruct(parent,node); trace.push({type:'goal',node,path}); return {goal:node,path,cost:pathCost(path,adj),created,trace}; }
+    for (const [nbN,w] of (adj[node]||[])) { const nb=String(nbN); if (closed.has(nb)) continue; const ng=g+w; if (ng < (bestG[nb] ?? Infinity)) { bestG[nb]=ng; parent[nb]=node; counter++; pq.push({f:ng+heuristic(nb,m.destinations,m.nodes),g:ng,id:nbN,ord:counter,node:nb}); created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); } }
+  }
+  return {goal:null,path:[],cost:0,created,trace};
+}
+function ids(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[];
+  const maxDepth=Math.max(1, Object.keys(m.nodes).length);
+  let total=0;
+  for (let d=0;d<=maxDepth;d++) {
+    trace.push({type:'iter',depth:d});
+    const parent={[origin]:null}, result={created:1,found:false,goal:null};
+    trace.push({type:'add',node:origin,parent:null});
+    function rec(node,dl) {
+      trace.push({type:'expand',node});
+      if (goals.has(node)) { result.found=true; result.goal=node; return true; }
+      if (dl===0) return false;
+      for (const [nbN] of (adj[node]||[])) { const nb=String(nbN); if (nb in parent) continue; parent[nb]=node; result.created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); if (rec(nb,dl-1)) return true; }
+      return false;
+    }
+    rec(origin,d);
+    total += result.created;
+    if (result.found) { const path=reconstruct(parent,result.goal); trace.push({type:'goal',node:result.goal,path}); return {goal:result.goal,path,cost:pathCost(path,adj),created:total,trace}; }
+  }
+  return {goal:null,path:[],cost:0,created:total,trace};
+}
+function idaStar(m) {
+  const adj=buildAdj(m), origin=String(m.origin), goals=new Set(m.destinations.map(String)), trace=[];
+  let total=0;
+  let threshold=heuristic(origin,m.destinations,m.nodes);
+  while (true) {
+    trace.push({type:'iter',threshold});
+    const parent={[origin]:null}, path=[origin], result={created:1,found:false,goal:null,nextT:Infinity};
+    trace.push({type:'add',node:origin,parent:null});
+    function dls(node,g) {
+      const f=g+heuristic(node,m.destinations,m.nodes);
+      trace.push({type:'expand',node});
+      if (f>threshold) { if (f<result.nextT) result.nextT=f; return false; }
+      if (goals.has(node)) { result.found=true; result.goal=node; return true; }
+      for (const [nbN,w] of (adj[node]||[])) { const nb=String(nbN); if (path.includes(nb)) continue; parent[nb]=node; path.push(nb); result.created++; trace.push({type:'add',node:nb,parent:node,edge:[node,nb]}); if (dls(nb,g+w)) return true; path.pop(); }
+      return false;
+    }
+    dls(origin,0);
+    total += result.created;
+    if (result.found) { const full=reconstruct(parent,result.goal); trace.push({type:'goal',node:result.goal,path:full}); return {goal:result.goal,path:full,cost:pathCost(full,adj),created:total,trace}; }
+    if (result.nextT===Infinity) return {goal:null,path:[],cost:0,created:total,trace};
+    threshold=result.nextT;
+  }
+}
+const ALGOS = {DFS:dfs, BFS:bfs, GBFS:gbfs, AS:astar, CUS1:ids, CUS2:idaStar};
+
+// ============================================================================
+// State and rendering
+// ============================================================================
+const svg = document.getElementById('mapSvg');
+const treeSvg = document.getElementById('treeSvg');
+const statusText = document.getElementById('statusText');
+const eventLog = document.getElementById('eventLog');
+const stage = document.getElementById('stage');
+
+let currentResult = null;
+let currentTrace = [];
+let traceIdx = 0;
+let playing = false;
+let playTimer = null;
+let playSpeed = 350;
+
+const state = {
+  expanded: new Set(), frontier: new Set(), pathSet: new Set(),
+  parentMap: {}, exploredEdges: new Set(), pathEdges: new Set(),
+  current: null,
+};
+
+function resetState() {
+  state.expanded.clear(); state.frontier.clear(); state.pathSet.clear();
+  state.parentMap = {}; state.exploredEdges.clear(); state.pathEdges.clear();
+  state.current = null;
+  eventLog.innerHTML = '';
+  treeSvg.innerHTML = '';
+  statusText.textContent = 'Ready';
+}
+
+function projectionFn() {
+  const nodes = currentMapData.nodes;
+  const ids = Object.keys(nodes);
+  const xs = ids.map(i => nodes[i][0]);
+  const ys = ids.map(i => nodes[i][1]);
+  let minX = Math.min(...xs), maxX = Math.max(...xs);
+  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  if (minX === maxX) { minX -= 1; maxX += 1; }
+  if (minY === maxY) { minY -= 1; maxY += 1; }
+  const pad = 60;
+  const W = svg.clientWidth || 900;
+  const H = svg.clientHeight || 700;
+  const s = Math.min((W - 2*pad) / (maxX - minX || 1), (H - 2*pad) / (maxY - minY || 1), 90);
+  const offX = (W - (maxX - minX) * s) / 2 - minX * s;
+  const offY = pad + (H - 2*pad - (maxY - minY) * s) / 2 + maxY * s;
+  return {
+    W, H, s, offX, offY,
+    to: id => { const [x, y] = nodes[id]; return [x * s + offX, offY - y * s]; },
+    from: (px, py) => [(px - offX) / s, (offY - py) / s],
+  };
+}
+
+function renderMap() {
+  const {W, H, to} = projectionFn();
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `<defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.35)"/></marker>
+      <marker id="arr-explored" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/></marker>
+      <marker id="arr-path" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e"/></marker>
+    </defs>`;
+  const eMap = {};
+  for (const [a,b,c] of currentMapData.edges) eMap[`${a}->${b}`] = c;
+  const drawn = new Set();
+  for (const [a,b,c] of currentMapData.edges) {
+    const key = `${a}->${b}`;
+    if (drawn.has(key)) continue;
+    const bothWays = eMap[`${b}->${a}`] !== undefined;
+    const [x1, y1] = to(a);
+    const [x2, y2] = to(b);
+    const dx = x2 - x1, dy = y2 - y1;
+    const dist = Math.hypot(dx, dy);
+    const r = 18;
+    const ux = dx / (dist || 1), uy = dy / (dist || 1);
+    const sx = x1 + ux * r, sy = y1 + uy * r;
+    const ex = x2 - ux * r, ey = y2 - uy * r;
+    const pathed = state.pathEdges.has(`${a}->${b}`) || state.pathEdges.has(`${b}->${a}`);
+    const explored = !pathed && (state.exploredEdges.has(`${a}->${b}`) || state.exploredEdges.has(`${b}->${a}`));
+    let cls = 'edge-line';
+    if (pathed) cls += ' path';
+    else if (explored) cls += ' explored';
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', sx); line.setAttribute('y1', sy);
+    line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+    line.setAttribute('class', cls);
+    line.setAttribute('data-edge', `${a}->${b}`);
+    line.setAttribute('data-edge-bidir', bothWays ? '1' : '0');
+    if (!bothWays) line.setAttribute('marker-end', pathed ? 'url(#arr-path)' : (explored ? 'url(#arr-explored)' : 'url(#arr)'));
+    svg.appendChild(line);
+    drawn.add(key);
+    if (bothWays) drawn.add(`${b}->${a}`);
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', mx); t.setAttribute('y', my - 3);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('class', 'edge-cost');
+    t.textContent = c;
+    svg.appendChild(t);
+  }
+  const originStr = String(originNode);
+  const destStr = String(destNode);
+  for (const id of Object.keys(currentMapData.nodes)) {
+    const [x, y] = to(id);
+    let cls = 'node-circle node-unvisited';
+    if (state.pathSet.has(id)) cls = 'node-circle node-path';
+    else if (state.expanded.has(id)) cls = 'node-circle node-expanded';
+    else if (state.frontier.has(id)) cls = 'node-circle node-frontier';
+    if (id === state.current) cls += ' node-current';
+    if (id === destStr && !state.pathSet.has(id)) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      g.setAttribute('cx', x); g.setAttribute('cy', y);
+      g.setAttribute('r', 22);
+      g.setAttribute('class', 'node-goal-ring');
+      svg.appendChild(g);
+    }
+    if (id === originStr) {
+      const o = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      o.setAttribute('cx', x); o.setAttribute('cy', y);
+      o.setAttribute('r', 25);
+      o.setAttribute('class', 'node-origin-ring');
+      svg.appendChild(o);
+    }
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y);
+    c.setAttribute('r', 18);
+    c.setAttribute('class', cls);
+    c.setAttribute('data-node', id);
+    svg.appendChild(c);
+    // When editing and this node is the pending "from" of a new edge, show a pulsing ring
+    if (editMode && String(editLinkingFrom) === id) {
+      const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      ring.setAttribute('cx', x); ring.setAttribute('cy', y);
+      ring.setAttribute('r', 28);
+      ring.setAttribute('fill', 'none');
+      ring.setAttribute('stroke', 'var(--accent)');
+      ring.setAttribute('stroke-width', '2.5');
+      ring.setAttribute('stroke-dasharray', '5 3');
+      ring.setAttribute('opacity', '0.9');
+      ring.style.filter = 'drop-shadow(0 0 6px rgba(124,140,255,0.6))';
+      svg.appendChild(ring);
+    }
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', y);
+    txt.setAttribute('class', 'node-label');
+    txt.textContent = id;
+    svg.appendChild(txt);
+    if (id === originStr || id === destStr) {
+      const tag = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tag.setAttribute('x', x); tag.setAttribute('y', y + 34);
+      tag.setAttribute('class', 'node-tag');
+      tag.textContent = id === originStr ? 'START' : 'END';
+      svg.appendChild(tag);
+    }
+  }
+}
+
+function renderTree() {
+  const nodes = Object.keys(state.parentMap);
+  if (!nodes.length) { treeSvg.innerHTML = ''; return; }
+  const children = {}, depth = {};
+  for (const n of nodes) { children[n] = []; depth[n] = 0; }
+  for (const n of nodes) {
+    const p = state.parentMap[n];
+    if (p !== null && p !== undefined) { children[p] = children[p] || []; children[p].push(n); }
+  }
+  const roots = nodes.filter(n => state.parentMap[n] === null || state.parentMap[n] === undefined);
+  let xc = 0;
+  const pos = {};
+  function assign(n, d) {
+    depth[n] = d;
+    const k = (children[n] || []).sort((a,b) => parseInt(a) - parseInt(b));
+    if (!k.length) { pos[n] = {x:xc++, y:d}; return; }
+    const xs = [];
+    for (const c of k) { assign(c, d+1); xs.push(pos[c].x); }
+    pos[n] = {x:(Math.min(...xs) + Math.max(...xs))/2, y:d};
+  }
+  for (const r of roots) assign(r, 0);
+  const gap = 36, vgap = 42;
+  const maxD = Math.max(...Object.values(depth));
+  const W = Math.max(280, (xc+1) * gap + 40);
+  const H = Math.max(160, (maxD+1) * vgap + 30);
+  treeSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  treeSvg.setAttribute('width', W);
+  treeSvg.setAttribute('height', H);
+  treeSvg.innerHTML = '';
+  for (const n of nodes) {
+    const p = state.parentMap[n];
+    if (p === null || p === undefined) continue;
+    const a = pos[p], b = pos[n];
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', 20 + a.x*gap); line.setAttribute('y1', 20 + a.y*vgap);
+    line.setAttribute('x2', 20 + b.x*gap); line.setAttribute('y2', 20 + b.y*vgap);
+    const onPath = state.pathSet.has(n) && state.pathSet.has(p);
+    line.setAttribute('stroke', onPath ? '#22c55e' : 'rgba(255,255,255,0.22)');
+    line.setAttribute('stroke-width', onPath ? 2.5 : 1.2);
+    treeSvg.appendChild(line);
+  }
+  for (const n of nodes) {
+    const p = pos[n];
+    const x = 20 + p.x * gap, y = 20 + p.y * vgap;
+    let fill = '#2a2f4a', stroke = '#3d4270';
+    if (state.pathSet.has(n)) { fill = '#22c55e'; stroke = '#15803d'; }
+    else if (state.expanded.has(n)) { fill = '#f59e0b'; stroke = '#d97706'; }
+    else if (state.frontier.has(n)) { fill = '#38bdf8'; stroke = '#0ea5e9'; }
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y);
+    c.setAttribute('r', 12);
+    c.setAttribute('fill', fill);
+    c.setAttribute('stroke', stroke);
+    c.setAttribute('stroke-width', n === state.current ? 3 : 1.5);
+    treeSvg.appendChild(c);
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('fill', '#fff');
+    t.setAttribute('font-size', 10);
+    t.setAttribute('font-weight', 700);
+    t.textContent = n;
+    treeSvg.appendChild(t);
+  }
+}
+
+function logEvent(ev) {
+  const div = document.createElement('div');
+  if (ev.type === 'expand') { div.className = 'ev-expand'; div.textContent = `expand  ${ev.node}`; }
+  else if (ev.type === 'add') { div.className = 'ev-add'; div.textContent = `add     ${ev.node}${ev.parent ? ` (<- ${ev.parent})` : ''}`; }
+  else if (ev.type === 'iter') { div.className = 'ev-iter'; div.textContent = `-- iter ${ev.depth !== undefined ? 'depth=' + ev.depth : 'f<=' + ev.threshold.toFixed(1)} --`; }
+  else if (ev.type === 'goal') { div.className = 'ev-goal'; div.textContent = `GOAL at ${ev.node}`; }
+  eventLog.appendChild(div);
+  eventLog.scrollTop = eventLog.scrollHeight;
+}
+
+function applyEvent(ev) {
+  if (ev.type === 'add') {
+    state.frontier.add(ev.node);
+    state.parentMap[ev.node] = (ev.parent !== null && ev.parent !== undefined) ? ev.parent : null;
+    if (ev.edge) state.exploredEdges.add(`${ev.edge[0]}->${ev.edge[1]}`);
+  } else if (ev.type === 'expand') {
+    state.frontier.delete(ev.node);
+    state.expanded.add(ev.node);
+    state.current = ev.node;
+  } else if (ev.type === 'iter') {
+    state.frontier.clear();
+    state.expanded.clear();
+    state.parentMap = {};
+    state.exploredEdges.clear();
+    state.current = null;
+  } else if (ev.type === 'goal') {
+    ev.path.forEach(p => state.pathSet.add(String(p)));
+    for (let i = 0; i < ev.path.length - 1; i++) {
+      state.pathEdges.add(`${ev.path[i]}->${ev.path[i+1]}`);
+      state.pathEdges.add(`${ev.path[i+1]}->${ev.path[i]}`);
+    }
+  }
+  logEvent(ev);
+}
+
+function stepForward() {
+  if (traceIdx >= currentTrace.length) { pause(); return; }
+  const ev = currentTrace[traceIdx++];
+  applyEvent(ev);
+  renderMap();
+  renderTree();
+  updateStatus();
+}
+
+function updateStatus() {
+  const ev = currentTrace[Math.min(traceIdx - 1, currentTrace.length - 1)];
+  let msg = `Step ${traceIdx} / ${currentTrace.length}`;
+  if (ev && ev.type === 'expand') msg += ` \u00b7 expanding ${ev.node}`;
+  else if (ev && ev.type === 'goal') msg += ` \u00b7 GOAL reached`;
+  else if (ev && ev.type === 'iter') msg += ` \u00b7 new iteration`;
+  statusText.textContent = msg;
+}
+
+function play() {
+  if (traceIdx >= currentTrace.length) return;
+  playing = true;
+  document.getElementById('playBtn').textContent = '\u23f8';
+  playTimer = setInterval(() => { if (!playing) return; stepForward(); if (traceIdx >= currentTrace.length) pause(); }, playSpeed);
+}
+function pause() {
+  playing = false;
+  if (playTimer) clearInterval(playTimer);
+  playTimer = null;
+  document.getElementById('playBtn').textContent = '\u25b6';
+}
+function skipToEnd() {
+  pause();
+  while (traceIdx < currentTrace.length) applyEvent(currentTrace[traceIdx++]);
+  renderMap();
+  renderTree();
+  updateStatus();
+}
+function stepBack() {
+  pause();
+  if (traceIdx === 0) return;
+  traceIdx--;
+  const target = traceIdx;
+  resetState();
+  for (let i = 0; i < target; i++) applyEvent(currentTrace[i]);
+  renderMap();
+  renderTree();
+  updateStatus();
+}
+
+function renderResult(r) {
+  const panel = document.getElementById('resultPanel');
+  if (!r || !r.goal) { panel.innerHTML = '<div class="result-none">No solution found.</div>'; return; }
+  panel.innerHTML = `
+    <div class="result-row"><span class="result-label">starting_node</span><span class="result-value">${originNode}</span></div>
+    <div class="result-row"><span class="result-label">destination_node</span><span class="result-value">${r.goal}</span></div>
+    <div class="result-row"><span class="result-label">number_of_nodes</span><span class="result-value">${r.created}</span></div>
+    <div class="result-row"><span class="result-label">path_cost</span><span class="result-value">${r.cost}</span></div>
+    <div class="result-path">${r.path.join(' \u2192 ')}</div>`;
+}
+
+function validateInputs() {
+  const errEl = document.getElementById('inputErr');
+  errEl.textContent = '';
+  const o = parseInt(document.getElementById('originInput').value);
+  const d = parseInt(document.getElementById('destInput').value);
+  const validIds = Object.keys(currentMapData.nodes).map(Number);
+  const minId = Math.min(...validIds), maxId = Math.max(...validIds);
+  if (isNaN(o) || !(o in currentMapData.nodes)) { errEl.textContent = `Start node must be ${minId}-${maxId}`; return false; }
+  if (isNaN(d) || !(d in currentMapData.nodes)) { errEl.textContent = `End node must be ${minId}-${maxId}`; return false; }
+  if (o === d) { errEl.textContent = `Start and end must be different`; return false; }
+  originNode = o;
+  destNode = d;
+  return true;
+}
+
+function runSearch() {
+  if (!validateInputs()) { renderMap(); return; }
+  resetState();
+  pause();
+  traceIdx = 0;
+  const method = document.getElementById('algoSelect').value;
+  currentResult = ALGOS[method](getMap());
+  currentTrace = currentResult.trace;
+  renderResult(currentResult);
+  renderMap();
+  updateStatus();
+}
+
+function switchMap() {
+  currentMapKey = document.getElementById('mapSelect').value;
+  currentMapData = JSON.parse(JSON.stringify(MAPS[currentMapKey]));
+  originNode = currentMapData.defaultOrigin;
+  destNode = currentMapData.defaultDest;
+  document.getElementById('originInput').value = originNode;
+  document.getElementById('destInput').value = destNode;
+  editLinkingFrom = null;
+  resetState();
+  traceIdx = 0;
+  currentResult = null;
+  currentTrace = [];
+  renderMap();
+  document.getElementById('resultPanel').innerHTML =
+    '<div class="result-hint">Press "Find path" to run the search.</div>';
+}
+
+// ============================================================================
+// Edit mode — click to add nodes, click two nodes to add an edge, right-click
+// to delete.
+// ============================================================================
+function nextFreeNodeId() {
+  let id = 1;
+  while (id in currentMapData.nodes) id++;
+  return id;
+}
+
+function addNodeAt(gx, gy) {
+  const id = nextFreeNodeId();
+  currentMapData.nodes[id] = [Math.round(gx * 10) / 10, Math.round(gy * 10) / 10];
+  resetState();
+  traceIdx = 0;
+  currentResult = null;
+  currentTrace = [];
+  document.getElementById('resultPanel').innerHTML =
+    '<div class="result-hint">Graph changed. Press "Find path" again.</div>';
+  renderMap();
+}
+
+function addEdgeBetween(a, b) {
+  // Remove any existing edges between a and b first
+  currentMapData.edges = currentMapData.edges.filter(e =>
+    !(e[0] === a && e[1] === b) && !(e[0] === b && e[1] === a));
+  // Default cost = rounded Euclidean distance between the two nodes
+  const [x1, y1] = currentMapData.nodes[a];
+  const [x2, y2] = currentMapData.nodes[b];
+  const cost = Math.max(1, Math.round(Math.hypot(x1 - x2, y1 - y2)));
+  // Always bidirectional for simplicity in edit mode
+  currentMapData.edges.push([a, b, cost]);
+  currentMapData.edges.push([b, a, cost]);
+  resetState();
+  traceIdx = 0;
+  currentResult = null;
+  currentTrace = [];
+  document.getElementById('resultPanel').innerHTML =
+    '<div class="result-hint">Graph changed. Press "Find path" again.</div>';
+  renderMap();
+}
+
+function deleteNode(id) {
+  delete currentMapData.nodes[id];
+  currentMapData.edges = currentMapData.edges.filter(e => e[0] !== id && e[1] !== id);
+  if (currentMapData.destinations) {
+    currentMapData.destinations = currentMapData.destinations.filter(d => d !== id);
+  }
+  // If we just deleted origin or dest, pick new ones
+  const remaining = Object.keys(currentMapData.nodes).map(Number).sort((a, b) => a - b);
+  if (originNode === id && remaining.length) {
+    originNode = remaining[0];
+    document.getElementById('originInput').value = originNode;
+  }
+  if (destNode === id && remaining.length) {
+    destNode = remaining[remaining.length > 1 ? remaining.length - 1 : 0];
+    document.getElementById('destInput').value = destNode;
+  }
+  resetState();
+  traceIdx = 0;
+  currentResult = null;
+  currentTrace = [];
+  document.getElementById('resultPanel').innerHTML =
+    '<div class="result-hint">Graph changed. Press "Find path" again.</div>';
+  renderMap();
+}
+
+function deleteEdge(a, b) {
+  // Remove both directions
+  currentMapData.edges = currentMapData.edges.filter(e =>
+    !(e[0] === a && e[1] === b) && !(e[0] === b && e[1] === a));
+  resetState();
+  traceIdx = 0;
+  currentResult = null;
+  currentTrace = [];
+  document.getElementById('resultPanel').innerHTML =
+    '<div class="result-hint">Graph changed. Press "Find path" again.</div>';
+  renderMap();
+}
+
+// Single click handler on the SVG stage. Works in edit mode only.
+svg.addEventListener('click', (ev) => {
+  if (!editMode) return;
+  const t = ev.target;
+  // Clicked on a node circle
+  if (t.tagName === 'circle' && t.hasAttribute('data-node')) {
+    const id = parseInt(t.getAttribute('data-node'));
+    if (editLinkingFrom === null) {
+      editLinkingFrom = id;
+      renderMap();
+    } else if (editLinkingFrom === id) {
+      editLinkingFrom = null;
+      renderMap();
+    } else {
+      addEdgeBetween(editLinkingFrom, id);
+      editLinkingFrom = null;
+    }
+    return;
+  }
+  // Clicked on empty space
+  if (editLinkingFrom !== null) {
+    // Cancel pending link
+    editLinkingFrom = null;
+    renderMap();
+    return;
+  }
+  // Add a new node at click location
+  const rect = svg.getBoundingClientRect();
+  const px = ev.clientX - rect.left;
+  const py = ev.clientY - rect.top;
+  const vbW = svg.viewBox.baseVal.width || rect.width;
+  const vbH = svg.viewBox.baseVal.height || rect.height;
+  const sx = px * (vbW / rect.width);
+  const sy = py * (vbH / rect.height);
+  const proj = projectionFn();
+  const [gx, gy] = proj.from(sx, sy);
+  addNodeAt(gx, gy);
+});
+
+// Right-click for deletion.
+svg.addEventListener('contextmenu', (ev) => {
+  if (!editMode) return;
+  ev.preventDefault();
+  const t = ev.target;
+  if (t.tagName === 'circle' && t.hasAttribute('data-node')) {
+    const id = parseInt(t.getAttribute('data-node'));
+    deleteNode(id);
+  } else if (t.tagName === 'line' && t.hasAttribute('data-edge')) {
+    const [a, b] = t.getAttribute('data-edge').split('->').map(Number);
+    deleteEdge(a, b);
+  }
+});
+
+document.getElementById('editToggle').addEventListener('change', (e) => {
+  editMode = e.target.checked;
+  document.getElementById('editHint').style.display = editMode ? '' : 'none';
+  stage.classList.toggle('mode-edit', editMode);
+  editLinkingFrom = null;
+  renderMap();
+});
+
+// Wire up
+document.getElementById('mapSelect').addEventListener('change', switchMap);
+document.getElementById('runBtn').addEventListener('click', runSearch);
+document.getElementById('algoSelect').addEventListener('change', runSearch);
+document.getElementById('originInput').addEventListener('change', runSearch);
+document.getElementById('destInput').addEventListener('change', runSearch);
+document.getElementById('playBtn').addEventListener('click', () => playing ? pause() : play());
+document.getElementById('stepBtn').addEventListener('click', () => { pause(); stepForward(); });
+document.getElementById('stepBackBtn').addEventListener('click', stepBack);
+document.getElementById('resetBtn').addEventListener('click', runSearch);
+document.getElementById('finishBtn').addEventListener('click', skipToEnd);
+document.getElementById('speedSlider').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  playSpeed = Math.round(1100 - v * 100);
+  if (playing) { pause(); play(); }
+});
+window.addEventListener('resize', () => renderMap());
+
+// Initial load
+renderMap();
+document.getElementById('resultPanel').innerHTML =
+  '<div class="result-hint">Choose start and end nodes, pick an algorithm, then press "Find path".</div>';
+</script>
+</body>
+</html>
