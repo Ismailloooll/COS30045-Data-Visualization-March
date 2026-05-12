@@ -49,7 +49,7 @@ This project follows ethical data visualisation practices throughout. All chart 
 
 ## AI Declaration
 
-AI tools were used to help brainstorm ideas and suggest approaches during the development of this project. All code, content, and decisions were written and reviewed by the developer.
+AI tools were used to help brainstorm coding ideas and suggest approaches during the development of this project. All code, content, and decisions were reviewed and changed by the developer.
 
 ---
 
