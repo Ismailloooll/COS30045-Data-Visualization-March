@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Energy · D3 Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #111;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: sticky; top:0; z-index:100;
+      background: #fff;
+      border-bottom: 2px solid #f0f0f0;
+      display: flex; align-items: center;
+      padding: 0 48px; height: 60px; gap: 40px;
+    }
+
+    .nav-brand {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 16px; color: #16a363;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .nav-links { display:flex; gap:6px; flex:1; }
+
+    .nav-links a {
+      font-size: 13px; font-weight: 500;
+      color: #888; text-decoration: none;
+      padding: 6px 16px; border-radius: 20px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover { background: #f0faf5; color: #16a363; }
+    .nav-links a.active { background: #16a363; color: #fff; }
+
+    .nav-right {
+      font-size: 12px; color: #bbb; white-space: nowrap;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, #f0faf5 0%, #fff 50%, #fef9f0 100%);
+      padding: 80px 48px 70px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 60px; align-items: center;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #e6f7ef; color: #16a363;
+      font-size: 12px; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px;
+      margin-bottom: 24px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .hero-tag-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #16a363;
+      animation: glow 2s ease infinite;
+    }
+
+    @keyframes glow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(22,163,99,0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(22,163,99,0); }
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(52px, 5vw, 80px);
+      line-height: 0.95; letter-spacing: -2px;
+      color: #111; margin-bottom: 20px;
+    }
+
+    .hero h1 span { color: #16a363; }
+
+    .hero-desc {
+      font-size: 16px; line-height: 1.75;
+      color: #666; max-width: 520px; margin-bottom: 40px;
+    }
+
+    /* Stat cards */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+    .stat {
+      background: #fff;
+      border: 2px solid #f0f0f0;
+      border-radius: 14px; padding: 20px 16px;
+      text-align: center;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+
+    .stat:hover {
+      border-color: #16a363;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(22,163,99,0.12);
+    }
+
+    .stat-n {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 28px; color: #16a363;
+      letter-spacing: -1px; line-height: 1; margin-bottom: 6px;
+    }
+
+    .stat-l { font-size: 11px; color: #aaa; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Index cards */
+    .idx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .idx {
+      display: block; text-decoration: none;
+      background: #fff;
+      border: 2px solid #f0f0f0;
+      border-radius: 14px; padding: 22px;
+      transition: all 0.25s; cursor: pointer;
+    }
+
+    .idx:nth-child(1):hover { border-color: #16a363; box-shadow: 0 8px 28px rgba(22,163,99,0.15); }
+    .idx:nth-child(2):hover { border-color: #0ea5e9; box-shadow: 0 8px 28px rgba(14,165,233,0.15); }
+    .idx:nth-child(3):hover { border-color: #f59e0b; box-shadow: 0 8px 28px rgba(245,158,11,0.15); }
+    .idx:nth-child(4):hover { border-color: #8b5cf6; box-shadow: 0 8px 28px rgba(139,92,246,0.15); }
+
+    .idx:hover { transform: translateY(-4px); }
+
+    .idx-num {
+      font-size: 11px; font-weight: 600; margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .idx:nth-child(1) .idx-num { color: #16a363; }
+    .idx:nth-child(2) .idx-num { color: #0ea5e9; }
+    .idx:nth-child(3) .idx-num { color: #f59e0b; }
+    .idx:nth-child(4) .idx-num { color: #8b5cf6; }
+
+    .idx-title {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 15px; color: #111; margin-bottom: 5px;
+    }
+
+    .idx-sub { font-size: 12px; color: #aaa; }
+
+    /* ===== CHART SECTIONS ===== */
+    .cs {
+      padding: 72px 48px;
+      border-top: 2px solid #f0f0f0;
+      opacity: 0; transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .cs.vis { opacity:1; transform:translateY(0); }
+
+    .cs-inner {
+      max-width: 1300px; margin: 0 auto;
+      display: grid; grid-template-columns: 300px 1fr;
+      gap: 56px; align-items: start;
+    }
+
+    .cs-text { position: sticky; top: 72px; }
+
+    .cs-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 5px 14px; border-radius: 20px;
+      margin-bottom: 18px;
+    }
+
+    .tag-green  { background: #e6f7ef; color: #16a363; }
+    .tag-blue   { background: #e0f2fe; color: #0369a1; }
+    .tag-amber  { background: #fef3c7; color: #b45309; }
+    .tag-purple { background: #ede9fe; color: #6d28d9; }
+
+    .cs-text h2 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 28px; color: #111;
+      letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 14px;
+    }
+
+    .cs-text p {
+      font-size: 14px; line-height: 1.8; color: #666; margin-bottom: 24px;
+    }
+
+    /* Legend */
+    .leg { display:flex; flex-wrap:wrap; gap:10px; }
+    .leg-i { display:flex; align-items:center; gap:7px; font-size:12px; color:#555; font-weight:500; }
+    .leg-d  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .leg-ln { width:20px; height:3px; border-radius:2px; flex-shrink:0; }
+
+    /* Chart frame */
+    .cf {
+      background: #fff;
+      border: 2px solid #f0f0f0;
+      border-radius: 16px; padding: 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .cf:hover {
+      border-color: #d1fae5;
+      box-shadow: 0 8px 40px rgba(22,163,99,0.1);
+    }
+
+    .cf svg { display:block; width:100%; overflow:visible; }
+
+    /* Insight */
+    .insight {
+      max-width: 1300px; margin: 16px auto 0;
+      background: #f0faf5;
+      border-left: 4px solid #16a363;
+      border-radius: 0 10px 10px 0;
+      padding: 14px 20px;
+      font-size: 13px; color: #444; line-height: 1.6;
+      display:flex; gap:10px; align-items:flex-start;
+    }
+
+    /* Split (donut + bar) */
+    .cs-split {
+      border-top: 2px solid #f0f0f0;
+      display: grid; grid-template-columns: 1fr 2px 1fr;
+      opacity:0; transform:translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .cs-split.vis { opacity:1; transform:translateY(0); }
+
+    .sc { padding: 72px 48px; }
+
+    .sc h2 {
+      font-family:'Syne',sans-serif; font-weight:800;
+      font-size:24px; color:#111; margin-bottom:12px; line-height:1.15;
+    }
+
+    .sc p { font-size:14px; line-height:1.8; color:#666; margin-bottom:20px; }
+
+    .split-d { background: #f0f0f0; }
+
+    /* Axes */
+    .axis path { stroke: #e5e5e5; }
+    .axis line { stroke: #f0f0f0; }
+    .axis text { font-family:'Inter',sans-serif; font-size:11px; fill:#aaa; }
+
+    /* Tooltip */
+    #tip {
+      position:fixed; z-index:9999;
+      background: #111;
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family:'Inter',sans-serif; font-size:12px; line-height:1.8;
+      pointer-events:none; opacity:0; transition:opacity 0.1s;
+      max-width:210px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+
+    #tip b { color: #6ee7b7; display:block; margin-bottom:3px; font-size:13px; }
+
+    /* Footer */
+    footer {
+      border-top: 2px solid #f0f0f0;
+      padding: 32px 48px;
+      background: #fafafa;
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:12px;
+    }
+
+    .ft-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#16a363; }
+    .ft-info { font-size:12px; color:#bbb; }
+
+    /* Responsive */
+    @media (max-width:1100px) {
+      .hero { grid-template-columns:1fr; padding:60px 24px 48px; }
+      .idx-grid { grid-template-columns:repeat(4,1fr); }
+      .cs-inner { grid-template-columns:1fr; }
+      .cs-text { position:static; }
+      .cs-split { grid-template-columns:1fr; }
+      .split-d { display:none; }
+      .sc, .cs { padding:48px 24px; }
+      nav, footer { padding:0 24px; }
+      footer { padding:20px 24px; }
+    }
+
+    @media (max-width:640px) {
+      .idx-grid { grid-template-columns:1fr 1fr; }
+      .stats { grid-template-columns:1fr 1fr; }
+      .nav-links { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">◈ TV Energy Dashboard</div>
+    <div class="nav-links">
+      <a href="#s1" id="nl1">Scatter</a>
+      <a href="#s2" id="nl2">Donut</a>
+      <a href="#s3" id="nl3">Bar</a>
+      <a href="#s4" id="nl4">Line</a>
+    </div>
+    <div class="nav-right">COS30045 · Exercise 5</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="hero-tag">
+        <div class="hero-tag-dot"></div>
+        D3.js Multi-Chart Dashboard
+      </div>
+      <h1>TV Energy<br><span>Consumption</span></h1>
+      <p class="hero-desc">
+        Four interactive D3.js visualisations exploring Australian television energy data — from efficiency ratings to historical electricity spot prices across every state.
+      </p>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="stat-n">—</div><div class="stat-l">TV Models</div></div>
+        <div class="stat"><div class="stat-n">3</div><div class="stat-l">Technologies</div></div>
+        <div class="stat"><div class="stat-n">26yr</div><div class="stat-l">Price History</div></div>
+        <div class="stat"><div class="stat-n">4</div><div class="stat-l">Chart Types</div></div>
+      </div>
+    </div>
+
+    <div class="idx-grid">
+      <a href="#s1" class="idx">
+        <div class="idx-num">01</div>
+        <div class="idx-title">Scatter Plot</div>
+        <div class="idx-sub">Energy vs Star Rating</div>
+      </a>
+      <a href="#s2" class="idx">
+        <div class="idx-num">02</div>
+        <div class="idx-title">Donut Chart</div>
+        <div class="idx-sub">All sizes by technology</div>
+      </a>
+      <a href="#s3" class="idx">
+        <div class="idx-num">03</div>
+        <div class="idx-title">Bar Chart</div>
+        <div class="idx-sub">55" TVs by technology</div>
+      </a>
+      <a href="#s4" class="idx">
+        <div class="idx-num">04</div>
+        <div class="idx-title">Line Chart</div>
+        <div class="idx-sub">Spot prices 1998–2024</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- SCATTER -->
+  <section class="cs" id="s1">
+    <div class="cs-inner">
+      <div class="cs-text">
+        <div class="cs-tag tag-green">01 · Scatter Plot</div>
+        <h2>Energy vs Star Rating</h2>
+        <p>Each dot is one TV model. Colour shows screen technology. Higher star ratings generally mean lower energy use — hover any dot to see full details.</p>
+        <div class="leg" id="sc-leg"></div>
+      </div>
+      <div class="cf" id="scatter-container"></div>
+    </div>
+    <div class="insight">
+      <span>💡</span>
+      Higher star ratings correlate with lower energy consumption, but OLED models consistently use more energy than LCD/LED at the same star rating.
+    </div>
+  </section>
+
+  <!-- DONUT + BAR -->
+  <section class="cs-split" id="s2">
+    <div class="sc">
+      <div class="cs-tag tag-blue">02 · Donut Chart</div>
+      <h2>Energy by Technology — All Sizes</h2>
+      <p>Mean annual energy consumption across all screen sizes. OLED consumes significantly more than LCD and LED variants.</p>
+      <div class="cf" id="donut-container"></div>
+    </div>
+    <div class="split-d"></div>
+    <div class="sc" id="s3">
+      <div class="cs-tag tag-amber">03 · Bar Chart</div>
+      <h2>Energy by Technology — 55" Only</h2>
+      <p>For 55-inch TVs specifically. The technology gap narrows but OLED still leads in energy consumption.</p>
+      <div class="cf" id="bar-container"></div>
+    </div>
+  </section>
+
+  <!-- LINE -->
+  <section class="cs" id="s4">
+    <div class="cs-inner">
+      <div class="cs-text">
+        <div class="cs-tag tag-purple">04 · Line Chart</div>
+        <h2>Electricity Spot Prices 1998–2024</h2>
+        <p>Rising electricity prices across Australian states make energy-efficient TVs increasingly important. Hover the chart to compare all state prices for any year.</p>
+        <div class="leg" id="ln-leg"></div>
+      </div>
+      <div class="cf" id="line-container"></div>
+    </div>
+    <div class="insight">
+      <span>💡</span>
+      South Australia shows the highest price volatility. The national average has risen sharply since 2015 — making every kWh saved more valuable for consumers.
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="ft-brand">◈ TV Energy Dashboard</div>
+    <div class="ft-info">COS30045 Data Visualisation · Exercise 5 · Ismail Mehtiyev · s106407636 · Swinburne University 2025</div>
+  </footer>
+
+  <div id="tip"></div>
+
+  <script src="js/scatter.js"></script>
+  <script src="js/donut.js"></script>
+  <script src="js/bar.js"></script>
+  <script src="js/line.js"></script>
+
+  <script>
+    const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('vis'); }), {threshold:0.08});
+    document.querySelectorAll('.cs,.cs-split').forEach(el => obs.observe(el));
+
+    const navObs = new IntersectionObserver(e => {
+      e.forEach(x => {
+        if(x.isIntersecting){
+          document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+          const id = x.target.id;
+          const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+          if(link) link.classList.add('active');
+        }
+      });
+    },{threshold:0.4});
+    document.querySelectorAll('.cs,.cs-split').forEach(el=>navObs.observe(el));
+  </script>
+</body>
+</html>

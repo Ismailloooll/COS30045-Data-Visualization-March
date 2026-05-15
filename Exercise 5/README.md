@@ -51,3 +51,20 @@ Ensure that:
 - All Exercise 5 files are inside the **Exercise 5 folder**
 - Your code is pushed to GitHub
 - Your repository link is submitted through the submission system.
+
+
+
+## Submission
+
+Your **forked repository** will serve as your submission.
+
+Ensure that:
+- All Exercise 5 files are inside the **Exercise 5 folder**
+- Your code is pushed to GitHub
+- Your repository link is submitted through the submission system.
+
+---
+
+## AI Declaration
+
+AI tools were used to help brainstorm ideas and suggest approaches during the development of this project. All code, content, and decisions were written and reviewed by the developer.
