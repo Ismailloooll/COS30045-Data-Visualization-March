@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Energy · Exercise 6 · Interactivity</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:#fff; color:#111; }
+
+    /* NAV */
+    nav {
+      position:sticky; top:0; z-index:100;
+      background:#fff; border-bottom:2px solid #f0f0f0;
+      display:flex; align-items:center;
+      padding:0 48px; height:60px; gap:40px;
+    }
+    .nav-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#16a363; white-space:nowrap; flex-shrink:0; }
+    .nav-links { display:flex; gap:6px; flex:1; }
+    .nav-links a { font-size:13px; font-weight:500; color:#888; text-decoration:none; padding:6px 16px; border-radius:20px; transition:all 0.2s; }
+    .nav-links a:hover { background:#f0faf5; color:#16a363; }
+    .nav-links a.active { background:#16a363; color:#fff; }
+    .nav-right { font-size:12px; color:#bbb; white-space:nowrap; }
+
+    /* HERO */
+    .hero {
+      background:linear-gradient(135deg,#f0faf5 0%,#fff 50%,#fef9f0 100%);
+      padding:80px 48px 70px;
+      display:grid; grid-template-columns:1fr 420px;
+      gap:60px; align-items:center;
+      border-bottom:2px solid #f0f0f0;
+    }
+    .hero-tag { display:inline-flex; align-items:center; gap:8px; background:#e6f7ef; color:#16a363; font-size:12px; font-weight:600; padding:6px 14px; border-radius:20px; margin-bottom:24px; text-transform:uppercase; letter-spacing:1px; }
+    .hero-tag-dot { width:7px; height:7px; border-radius:50%; background:#16a363; animation:glow 2s ease infinite; }
+    @keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(22,163,99,0.5);} 50%{box-shadow:0 0 0 6px rgba(22,163,99,0);} }
+    .hero h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(52px,5vw,80px); line-height:0.95; letter-spacing:-2px; color:#111; margin-bottom:20px; }
+    .hero h1 span { color:#16a363; }
+    .hero-desc { font-size:16px; line-height:1.75; color:#666; max-width:520px; margin-bottom:40px; }
+
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .stat { background:#fff; border:2px solid #f0f0f0; border-radius:14px; padding:20px 16px; text-align:center; transition:all 0.25s; }
+    .stat:hover { border-color:#16a363; transform:translateY(-4px); box-shadow:0 12px 32px rgba(22,163,99,0.12); }
+    .stat-n { font-family:'Syne',sans-serif; font-weight:800; font-size:28px; color:#16a363; letter-spacing:-1px; line-height:1; margin-bottom:6px; }
+    .stat-l { font-size:11px; color:#aaa; font-weight:500; text-transform:uppercase; letter-spacing:1px; }
+
+    .idx-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .idx { display:block; text-decoration:none; background:#fff; border:2px solid #f0f0f0; border-radius:14px; padding:22px; transition:all 0.25s; }
+    .idx:nth-child(1):hover { border-color:#16a363; box-shadow:0 8px 28px rgba(22,163,99,0.15); }
+    .idx:nth-child(2):hover { border-color:#0ea5e9; box-shadow:0 8px 28px rgba(14,165,233,0.15); }
+    .idx:hover { transform:translateY(-4px); }
+    .idx-num { font-size:11px; font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px; }
+    .idx:nth-child(1) .idx-num { color:#16a363; }
+    .idx:nth-child(2) .idx-num { color:#0ea5e9; }
+    .idx-title { font-family:'Syne',sans-serif; font-weight:700; font-size:15px; color:#111; margin-bottom:5px; }
+    .idx-sub { font-size:12px; color:#aaa; }
+
+    /* CHART SECTIONS */
+    .cs { padding:72px 48px; border-top:2px solid #f0f0f0; opacity:0; transform:translateY(32px); transition:opacity 0.7s ease,transform 0.7s ease; }
+    .cs.vis { opacity:1; transform:translateY(0); }
+    .cs-inner { max-width:1300px; margin:0 auto; display:grid; grid-template-columns:300px 1fr; gap:56px; align-items:start; }
+    .cs-text { position:sticky; top:72px; }
+    .cs-tag { display:inline-flex; align-items:center; gap:8px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px; padding:5px 14px; border-radius:20px; margin-bottom:18px; }
+    .tag-green  { background:#e6f7ef; color:#16a363; }
+    .tag-blue   { background:#e0f2fe; color:#0369a1; }
+    .cs-text h2 { font-family:'Syne',sans-serif; font-weight:800; font-size:28px; color:#111; letter-spacing:-0.5px; line-height:1.1; margin-bottom:14px; }
+    .cs-text p  { font-size:14px; line-height:1.8; color:#666; margin-bottom:24px; }
+
+    /* Filter buttons */
+    .filter-group { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:0; }
+    .filter-btn {
+      font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+      padding:8px 20px; border-radius:20px; border:2px solid #f0f0f0;
+      background:#fff; color:#888; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .filter-btn:hover { border-color:#16a363; color:#16a363; }
+    .filter-btn.active { background:#16a363; border-color:#16a363; color:#fff; }
+    .filter-btn.active-led  { background:#10b981; border-color:#10b981; color:#fff; }
+    .filter-btn.active-lcd  { background:#0ea5e9; border-color:#0ea5e9; color:#fff; }
+    .filter-btn.active-oled { background:#f59e0b; border-color:#f59e0b; color:#fff; }
+
+    /* Chart frame */
+    .cf { background:#fff; border:2px solid #f0f0f0; border-radius:16px; padding:24px; box-shadow:0 4px 24px rgba(0,0,0,0.05); transition:border-color 0.3s,box-shadow 0.3s; }
+    .cf:hover { border-color:#d1fae5; box-shadow:0 8px 40px rgba(22,163,99,0.1); }
+    .cf svg { display:block; width:100%; overflow:visible; }
+
+    /* Legend */
+    .leg { display:flex; flex-wrap:wrap; gap:10px; }
+    .leg-i { display:flex; align-items:center; gap:7px; font-size:12px; color:#555; font-weight:500; }
+    .leg-d { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+    /* Insight */
+    .insight { max-width:1300px; margin:16px auto 0; background:#f0faf5; border-left:4px solid #16a363; border-radius:0 10px 10px 0; padding:14px 20px; font-size:13px; color:#444; line-height:1.6; display:flex; gap:10px; align-items:flex-start; }
+
+    /* Axes */
+    .axis path { stroke:#e5e5e5; }
+    .axis line { stroke:#f0f0f0; }
+    .axis text { font-family:'Inter',sans-serif; font-size:11px; fill:#aaa; }
+
+    /* Tooltip */
+    #tip { position:fixed; z-index:9999; background:#111; color:#fff; border-radius:10px; padding:12px 16px; font-family:'Inter',sans-serif; font-size:12px; line-height:1.8; pointer-events:none; opacity:0; transition:opacity 0.1s; max-width:220px; box-shadow:0 12px 40px rgba(0,0,0,0.25); }
+    #tip b { color:#6ee7b7; display:block; margin-bottom:3px; font-size:13px; }
+
+    /* Footer */
+    footer { border-top:2px solid #f0f0f0; padding:32px 48px; background:#fafafa; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .ft-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#16a363; }
+    .ft-info { font-size:12px; color:#bbb; }
+
+    /* Responsive */
+    @media(max-width:1100px) {
+      .hero { grid-template-columns:1fr; padding:60px 24px 48px; }
+      .idx-grid { grid-template-columns:repeat(2,1fr); }
+      .cs-inner { grid-template-columns:1fr; }
+      .cs-text { position:static; }
+      .cs { padding:48px 24px; }
+      nav, footer { padding:0 24px; }
+      footer { padding:20px 24px; }
+    }
+    @media(max-width:640px) {
+      .stats { grid-template-columns:1fr 1fr; }
+      .nav-links { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">◈ TV Energy · Ex6</div>
+    <div class="nav-links">
+      <a href="#s1" id="nl1">Histogram</a>
+      <a href="#s2" id="nl2">Scatter Plot</a>
+    </div>
+    <div class="nav-right">COS30045 · Exercise 6</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="hero-tag"><div class="hero-tag-dot"></div>D3.js Interactivity</div>
+      <h1>Interactive<br><span>TV Energy</span></h1>
+      <p class="hero-desc">Exercise 6 adds interactive filters and tooltips to D3 visualisations. Filter the histogram by screen technology, and hover the scatter plot to explore individual TV model details.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="stat-n">—</div><div class="stat-l">TV Models</div></div>
+        <div class="stat"><div class="stat-n" id="stat-tech">3</div><div class="stat-l">Technologies</div></div>
+        <div class="stat"><div class="stat-n" id="stat-max">—</div><div class="stat-l">Max kWh/yr</div></div>
+        <div class="stat"><div class="stat-n" id="stat-avg">—</div><div class="stat-l">Avg kWh/yr</div></div>
+      </div>
+    </div>
+    <div class="idx-grid">
+      <a href="#s1" class="idx">
+        <div class="idx-num">01</div>
+        <div class="idx-title">Histogram + Filter</div>
+        <div class="idx-sub">Filter by LED / LCD / OLED</div>
+      </a>
+      <a href="#s2" class="idx">
+        <div class="idx-num">02</div>
+        <div class="idx-title">Scatter + Tooltip</div>
+        <div class="idx-sub">Hover for TV model details</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- HISTOGRAM -->
+  <section class="cs" id="s1">
+    <div class="cs-inner">
+      <div class="cs-text">
+        <div class="cs-tag tag-green">01 · Histogram</div>
+        <h2>Energy Consumption Distribution</h2>
+        <p>Distribution of annual energy consumption (kWh/year) across all TV models. Use the filter buttons to show only LED, LCD, or OLED models and see how the distribution changes.</p>
+        <p style="font-size:13px;color:#999;margin-bottom:16px">Click a button to filter — click again to deactivate.</p>
+        <div class="filter-group" id="filter-buttons"></div>
+      </div>
+      <div class="cf" id="histogram-container"></div>
+    </div>
+    <div class="insight">
+      <span>💡</span>
+      LED TVs dominate the market and show the widest range of energy consumption. OLED models cluster at higher consumption levels while LCD tends to be more moderate.
+    </div>
+  </section>
+
+  <!-- SCATTER -->
+  <section class="cs" id="s2">
+    <div class="cs-inner">
+      <div class="cs-text">
+        <div class="cs-tag tag-blue">02 · Scatter Plot</div>
+        <h2>Energy vs Star Rating</h2>
+        <p>Each dot represents one TV model. Colour indicates screen technology. Hover any dot to see the brand, model, screen size, and energy consumption details.</p>
+        <div class="leg" id="sc-leg"></div>
+      </div>
+      <div class="cf" id="scatter-container"></div>
+    </div>
+    <div class="insight">
+      <span>💡</span>
+      Higher star ratings generally correspond to lower energy use. OLED models tend to consume more energy even at higher star ratings compared to LED equivalents.
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="ft-brand">◈ TV Energy Dashboard</div>
+    <div class="ft-info">COS30045 Data Visualisation · Exercise 6 · Ismail Mehtiyev · s106407636 · Swinburne University 2025</div>
+  </footer>
+
+  <div id="tip"></div>
+
+  <script src="js/shared-constants.js"></script>
+  <script src="js/data-load.js"></script>
+  <script src="js/histogram.js"></script>
+  <script src="js/scatter.js"></script>
+  <script src="js/interactions.js"></script>
+
+  <script>
+    const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('vis'); }), {threshold:0.08});
+    document.querySelectorAll('.cs').forEach(el => obs.observe(el));
+    const navObs = new IntersectionObserver(e => {
+      e.forEach(x => {
+        if(x.isIntersecting){
+          document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+          const link = document.querySelector(`.nav-links a[href="#${x.target.id}"]`);
+          if(link) link.classList.add('active');
+        }
+      });
+    },{threshold:0.4});
+    document.querySelectorAll('.cs').forEach(el=>navObs.observe(el));
+  </script>
+</body>
+</html>

@@ -63,3 +63,38 @@ Before starting, review:
 5. Commit and push your changes regularly to GitHub.
 
 Your forked repository will serve as your **submission record**.
+
+
+
+
+
+# Exercise 6 – Interactivity
+
+## Aim
+Add interactivity to D3 visualisations using filters and tooltips.
+
+## Purpose
+Interaction is one of the key advantages of displaying visualisations on a computer. In this exercise a histogram with interactive filter buttons and a scatter plot with tooltips are built using the TV energy consumption dataset.
+
+## Charts
+
+### Exercise 6.1 — Histogram with Filter
+A histogram showing the distribution of annual energy consumption (kWh/year) across all TV models. Filter buttons allow the user to show only LED, LCD, or OLED models. The histogram bars animate smoothly when a filter is applied.
+
+### Exercise 6.2 — Scatter Plot with Tooltip
+A scatter plot showing energy consumption vs star rating. Each dot represents one TV model and is colour coded by screen technology. Hovering over any dot shows a tooltip with the brand, model, screen size, energy consumption, and star rating.
+
+## Dataset
+
+Ex6_TVdata.csv — TV energy consumption data from the Australian Government energy rating dataset (January 2025). Columns: brand, model, screenSize, screenTech, energyConsumption, star.
+
+## Preparation
+
+- Week 6 lecture slides
+- Chapter 7 of Dufour and Meeks (2024)
+
+---
+
+## AI Declaration
+
+AI tools were used to help brainstorm ideas and suggest approaches during the development of this project. All code, content, and decisions were written and reviewed by the developer.
