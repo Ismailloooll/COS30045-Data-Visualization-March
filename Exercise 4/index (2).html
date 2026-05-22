@@ -27,39 +27,17 @@
         <span class="nav-label">4.1 Draw SVGs</span>
       </button>
 
-      <div class="nav-group-label">D3 Basics</div>
-      <button class="nav-btn" onclick="showPage('ex42')" id="nav-ex42">
-        <span class="nav-icon">✏️</span>
-        <span class="nav-label">4.2 Manipulate</span>
-      </button>
-
-      <div class="nav-group-label">Building a Bar Chart</div>
-      <button class="nav-btn" onclick="showPage('ex43')" id="nav-ex43">
-        <span class="nav-icon">📐</span>
-        <span class="nav-label">4.3 D3 Setup</span>
-      </button>
-      <button class="nav-btn" onclick="showPage('ex44')" id="nav-ex44">
-        <span class="nav-icon">📂</span>
-        <span class="nav-label">4.4 Load CSV</span>
-      </button>
-      <button class="nav-btn" onclick="showPage('ex45')" id="nav-ex45">
-        <span class="nav-icon">🔗</span>
-        <span class="nav-label">4.5 Bind Data</span>
-      </button>
+      <div class="nav-group-label">D3 Bar Chart</div>
       <button class="nav-btn" onclick="showPage('ex46')" id="nav-ex46">
         <span class="nav-icon">📏</span>
         <span class="nav-label">4.6 Scaling</span>
-      </button>
-      <button class="nav-btn" onclick="showPage('ex47')" id="nav-ex47">
-        <span class="nav-icon">🏷️</span>
-        <span class="nav-label">4.7 Labels</span>
       </button>
     </nav>
 
     <div class="sidebar-footer">
       <div class="progress-label">Progress</div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="progress-text" id="progress-text">1 / 7</div>
+      <div class="progress-text" id="progress-text">1 / 2</div>
     </div>
   </aside>
 
@@ -197,107 +175,20 @@
       </div>
     </div>
 
-    <!-- ===== 4.2 D3 MANIPULATE ===== -->
-    <div id="page-ex42" class="page hidden">
-      <div class="page-header">
-        <div class="page-badge">Exercise 4.2</div>
-        <h1>Manipulate Elements with D3</h1>
-        <p>D3 was used to select HTML elements and change their appearance, append a paragraph to a div, and append a rectangle to an SVG element.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">🎨</span><h2>Style changed with D3</h2></div>
-        <p>D3 selected the heading on this page and changed its colour to dark green using <strong>d3.select("h1").style("color", ...)</strong></p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">➕</span><h2>Paragraph appended with D3</h2></div>
-        <p>D3 appended a new &lt;p&gt; element into the div below using <strong>d3.select("div").append("p").text(...)</strong></p>
-        <div id="d3-append-target" class="d3-target-box">
-          <p class="target-label">Target div ↓</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">▭</span><h2>Rectangle appended to SVG with D3</h2></div>
-        <p>D3 appended a &lt;rect&gt; element to the SVG below with x, y, width, height, and fill attributes.</p>
-        <svg id="ex42-svg" viewBox="0 0 400 150" style="width:100%;max-width:500px;border:1px solid #d0e8d8;border-radius:8px;background:#f9f9f9;display:block;margin-top:12px;"></svg>
-      </div>
-    </div>
-
-    <!-- ===== 4.3 D3 SETUP ===== -->
-    <div id="page-ex43" class="page hidden">
-      <div class="page-header">
-        <div class="page-badge">Exercise 4.3</div>
-        <h1>D3 Set Up</h1>
-        <p>A responsive SVG container was created using D3 with a viewBox attribute. The border shows the canvas boundary. Resize the browser to see the SVG scale responsively.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">📐</span><h2>Responsive SVG with Test Rectangle</h2></div>
-        <p>The blue rectangle confirms the SVG canvas is working. The viewBox ensures it scales with the window.</p>
-        <div class="responsive-svg-container" id="ex43-container"></div>
-      </div>
-    </div>
-
-    <!-- ===== 4.4 LOAD CSV ===== -->
-    <div id="page-ex44" class="page hidden">
-      <div class="page-header">
-        <div class="page-badge">Exercise 4.4</div>
-        <h1>Load Data from CSV</h1>
-        <p>d3.csv() loads brands.csv and converts the count column from string to number. Brand names are standardised to uppercase and duplicates merged.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">📊</span><h2>Dataset Information</h2></div>
-        <div id="ex44-output" class="console-output">Loading data...</div>
-        <p style="margin-top:10px;font-size:13px;color:#6b8c7a">Open F12 → Console to see the full data array.</p>
-      </div>
-    </div>
-
-    <!-- ===== 4.5 BIND DATA ===== -->
-    <div id="page-ex45" class="page hidden">
-      <div class="page-header">
-        <div class="page-badge">Exercise 4.5</div>
-        <h1>Bind Data and Draw</h1>
-        <p>Data is bound to SVG rectangles using selectAll / data / join. Bars are unscaled — width maps 1 count directly to 1 pixel so bars overflow the canvas. Scaling is added in the next exercise.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">🔗</span><h2>Unscaled Bars</h2></div>
-        <div class="info-banner info-yellow">
-          <span>⚠️</span>
-          <p>Bars overflow because there is no scaling yet — this is intentional to demonstrate the problem that scaling solves.</p>
-        </div>
-        <div class="responsive-svg-container" id="ex45-container"></div>
-      </div>
-    </div>
-
     <!-- ===== 4.6 SCALING ===== -->
     <div id="page-ex46" class="page hidden">
       <div class="page-header">
         <div class="page-badge">Exercise 4.6</div>
         <h1>Scaling Charts</h1>
-        <p>d3.scaleLinear() maps count values to pixel widths. d3.scaleBand() divides the y-axis into equal rows for each brand with padding between bars.</p>
+        <p>d3.scaleLinear() maps count values to pixel widths. d3.scaleBand() divides the y-axis into equal rows for each brand with padding between bars. The chart now adapts to any SVG size.</p>
       </div>
 
       <div class="card">
-        <div class="card-header"><span class="card-icon">📏</span><h2>Scaled Bars — No Labels Yet</h2></div>
+        <div class="card-header">
+          <span class="card-icon">📏</span>
+          <h2>TV Models by Brand — Scaled Bar Chart</h2>
+        </div>
         <div class="responsive-svg-container" id="ex46-container"></div>
-      </div>
-    </div>
-
-    <!-- ===== 4.7 LABELS ===== -->
-    <div id="page-ex47" class="page hidden">
-      <div class="page-header">
-        <div class="page-badge">Exercise 4.7</div>
-        <h1>Adding Labels</h1>
-        <p>Each bar and its labels are placed in a &lt;g&gt; group element with transform/translate so they move together with the yScale. Brand names appear left, counts appear right of each bar.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="card-icon">🏷️</span><h2>Final Bar Chart — TV Models by Brand</h2></div>
-        <div class="responsive-svg-container" id="ex47-container"></div>
       </div>
     </div>
 
