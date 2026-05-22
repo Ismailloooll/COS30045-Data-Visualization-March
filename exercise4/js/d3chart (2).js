@@ -59,9 +59,8 @@ d3.csv('data/brands.csv', d => ({
 
 function buildEx46(data) {
 
-  // Margins to make room for axes and labels
-  const margin = { top: 50, right: 60, bottom: 50, left: 120 };
-  const svgW = 600;
+  const margin = { top: 60, right: 70, bottom: 60, left: 120 };
+  const svgW = 620;
   const svgH = data.length * 36 + margin.top + margin.bottom;
   const w = svgW - margin.left - margin.right;
   const h = svgH - margin.top - margin.bottom;
@@ -70,36 +69,37 @@ function buildEx46(data) {
     .append('svg')
     .attr('viewBox', `0 0 ${svgW} ${svgH}`);
 
-  // Chart title
+  // ---- CHART TITLE ----
   svg.append('text')
     .attr('x', svgW / 2).attr('y', 22)
     .attr('text-anchor', 'middle')
-    .style('font-size', '14px').style('font-weight', '700')
+    .style('font-size', '15px').style('font-weight', '700')
     .style('fill', '#0d3d22').style('font-family', 'DM Sans, Arial')
-    .text('TV Models by Brand — Australia');
+    .text('TV Models by Brand — Australian Market');
 
+  // ---- CHART SUBTITLE ----
   svg.append('text')
-    .attr('x', svgW / 2).attr('y', 38)
+    .attr('x', svgW / 2).attr('y', 40)
     .attr('text-anchor', 'middle')
     .style('font-size', '11px').style('fill', '#6b8c7a')
     .style('font-family', 'DM Sans, Arial')
-    .text('Top 15 brands · standardised brand names');
+    .text('Top 15 brands · brand names standardised to uppercase');
 
   const g = svg.append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-  // xScale: linear — maps count to pixel width
+  // xScale: scaleLinear — maps count to pixel width
   const xScale = d3.scaleLinear()
     .domain([0, d3.max(data, d => d.count)])
     .range([0, w]);
 
-  // yScale: band — divides y-axis into equal rows per brand
+  // yScale: scaleBand — divides y-axis into equal bands per brand
   const yScale = d3.scaleBand()
     .domain(data.map(d => d.brand))
     .range([0, h])
     .padding(0.25);
 
-  // Grid lines
+  // ---- GRID LINES ----
   g.append('g')
     .call(d3.axisBottom(xScale).ticks(5).tickSize(h).tickFormat(''))
     .call(g => g.select('.domain').remove())
@@ -107,7 +107,7 @@ function buildEx46(data) {
       .style('stroke', '#e8f0eb')
       .style('stroke-dasharray', '3,3'));
 
-  // Bars
+  // ---- BARS ----
   g.selectAll('.bar').data(data).join('rect')
     .attr('class', d => `bar bar-${d.count}`)
     .attr('x', 0)
@@ -117,7 +117,7 @@ function buildEx46(data) {
     .attr('fill', '#1a5c38')
     .attr('rx', 3);
 
-  // X axis (bottom)
+  // ---- X AXIS ----
   g.append('g')
     .attr('class', 'axis')
     .attr('transform', `translate(0, ${h})`)
@@ -127,7 +127,7 @@ function buildEx46(data) {
       .style('font-size', '11px')
       .style('fill', '#888'));
 
-  // Y axis (left — brand names)
+  // ---- Y AXIS ----
   g.append('g')
     .attr('class', 'axis')
     .call(d3.axisLeft(yScale))
@@ -136,17 +136,17 @@ function buildEx46(data) {
       .style('font-size', '12px')
       .style('fill', '#1a2e22'));
 
-  // X axis label
+  // ---- X AXIS LABEL ----
   g.append('text')
     .attr('x', w / 2)
-    .attr('y', h + 40)
+    .attr('y', h + 48)
     .attr('text-anchor', 'middle')
     .style('font-family', 'DM Sans, Arial')
     .style('font-size', '12px')
     .style('fill', '#6b8c7a')
     .text('Number of TV Models');
 
-  // Y axis label
+  // ---- Y AXIS LABEL ----
   g.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('x', -h / 2)
@@ -157,7 +157,7 @@ function buildEx46(data) {
     .style('fill', '#6b8c7a')
     .text('Brand Name');
 
-  // Count labels right of each bar
+  // ---- COUNT LABELS right of each bar ----
   g.selectAll('.count-label').data(data).join('text')
     .attr('class', 'count-label')
     .attr('x', d => xScale(d.count) + 5)
