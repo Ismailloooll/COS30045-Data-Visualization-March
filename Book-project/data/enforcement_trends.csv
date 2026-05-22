@@ -1,0 +1,225 @@
+year,state,offence_type,count
+2008,NSW,Speeding,412000
+2008,VIC,Speeding,389000
+2008,QLD,Speeding,201000
+2008,WA,Speeding,145000
+2008,SA,Speeding,98000
+2008,TAS,Speeding,22000
+2008,ACT,Speeding,18000
+2008,NT,Speeding,12000
+2008,NSW,Mobile Phone,8200
+2008,VIC,Mobile Phone,6100
+2008,QLD,Mobile Phone,4200
+2008,WA,Mobile Phone,3100
+2008,SA,Mobile Phone,2100
+2008,TAS,Mobile Phone,510
+2008,ACT,Mobile Phone,420
+2008,NT,Mobile Phone,290
+2008,NSW,Drink Driving,41000
+2008,VIC,Drink Driving,38000
+2008,QLD,Drink Driving,21000
+2008,WA,Drink Driving,16000
+2008,SA,Drink Driving,11000
+2008,TAS,Drink Driving,2800
+2008,ACT,Drink Driving,1900
+2008,NT,Drink Driving,3200
+2008,NSW,Drug Driving,1200
+2008,VIC,Drug Driving,980
+2008,QLD,Drug Driving,610
+2008,WA,Drug Driving,420
+2008,SA,Drug Driving,280
+2008,TAS,Drug Driving,90
+2008,ACT,Drug Driving,70
+2008,NT,Drug Driving,110
+2010,NSW,Speeding,445000
+2010,VIC,Speeding,401000
+2010,QLD,Speeding,218000
+2010,WA,Speeding,158000
+2010,SA,Speeding,104000
+2010,TAS,Speeding,24000
+2010,ACT,Speeding,19500
+2010,NT,Speeding,13000
+2010,NSW,Mobile Phone,21000
+2010,VIC,Mobile Phone,18000
+2010,QLD,Mobile Phone,11000
+2010,WA,Mobile Phone,8200
+2010,SA,Mobile Phone,5400
+2010,TAS,Mobile Phone,1300
+2010,ACT,Mobile Phone,1100
+2010,NT,Mobile Phone,750
+2010,NSW,Drink Driving,39000
+2010,VIC,Drink Driving,36000
+2010,QLD,Drink Driving,20000
+2010,WA,Drink Driving,15500
+2010,SA,Drink Driving,10500
+2010,TAS,Drink Driving,2700
+2010,ACT,Drink Driving,1800
+2010,NT,Drink Driving,3100
+2010,NSW,Drug Driving,3800
+2010,VIC,Drug Driving,3200
+2010,QLD,Drug Driving,1900
+2010,WA,Drug Driving,1300
+2010,SA,Drug Driving,850
+2010,TAS,Drug Driving,280
+2010,ACT,Drug Driving,220
+2010,NT,Drug Driving,340
+2013,NSW,Speeding,489000
+2013,VIC,Speeding,421000
+2013,QLD,Speeding,238000
+2013,WA,Speeding,171000
+2013,SA,Speeding,112000
+2013,TAS,Speeding,26000
+2013,ACT,Speeding,21000
+2013,NT,Speeding,14000
+2013,NSW,Mobile Phone,48000
+2013,VIC,Mobile Phone,41000
+2013,QLD,Mobile Phone,25000
+2013,WA,Mobile Phone,18000
+2013,SA,Mobile Phone,12000
+2013,TAS,Mobile Phone,2900
+2013,ACT,Mobile Phone,2400
+2013,NT,Mobile Phone,1600
+2013,NSW,Drink Driving,36000
+2013,VIC,Drink Driving,33000
+2013,QLD,Drink Driving,18500
+2013,WA,Drink Driving,14000
+2013,SA,Drink Driving,9800
+2013,TAS,Drink Driving,2500
+2013,ACT,Drink Driving,1700
+2013,NT,Drink Driving,2900
+2013,NSW,Drug Driving,9200
+2013,VIC,Drug Driving,7800
+2013,QLD,Drug Driving,4600
+2013,WA,Drug Driving,3200
+2013,SA,Drug Driving,2100
+2013,TAS,Drug Driving,680
+2013,ACT,Drug Driving,540
+2013,NT,Drug Driving,820
+2016,NSW,Speeding,521000
+2016,VIC,Speeding,448000
+2016,QLD,Speeding,258000
+2016,WA,Speeding,181000
+2016,SA,Speeding,119000
+2016,TAS,Speeding,28000
+2016,ACT,Speeding,22500
+2016,NT,Speeding,15000
+2016,NSW,Mobile Phone,82000
+2016,VIC,Mobile Phone,71000
+2016,QLD,Mobile Phone,43000
+2016,WA,Mobile Phone,31000
+2016,SA,Mobile Phone,20500
+2016,TAS,Mobile Phone,4900
+2016,ACT,Mobile Phone,4100
+2016,NT,Mobile Phone,2700
+2016,NSW,Drink Driving,33000
+2016,VIC,Drink Driving,30000
+2016,QLD,Drink Driving,17000
+2016,WA,Drink Driving,13000
+2016,SA,Drink Driving,9000
+2016,TAS,Drink Driving,2300
+2016,ACT,Drink Driving,1600
+2016,NT,Drink Driving,2700
+2016,NSW,Drug Driving,18000
+2016,VIC,Drug Driving,15000
+2016,QLD,Drug Driving,9000
+2016,WA,Drug Driving,6200
+2016,SA,Drug Driving,4100
+2016,TAS,Drug Driving,1300
+2016,ACT,Drug Driving,1050
+2016,NT,Drug Driving,1580
+2019,NSW,Speeding,558000
+2019,VIC,Speeding,471000
+2019,QLD,Speeding,278000
+2019,WA,Speeding,191000
+2019,SA,Speeding,126000
+2019,TAS,Speeding,30000
+2019,ACT,Speeding,24000
+2019,NT,Speeding,16000
+2019,NSW,Mobile Phone,121000
+2019,VIC,Mobile Phone,104000
+2019,QLD,Mobile Phone,63000
+2019,WA,Mobile Phone,46000
+2019,SA,Mobile Phone,30000
+2019,TAS,Mobile Phone,7200
+2019,ACT,Mobile Phone,6000
+2019,NT,Mobile Phone,4000
+2019,NSW,Drink Driving,30000
+2019,VIC,Drink Driving,27500
+2019,QLD,Drink Driving,15500
+2019,WA,Drink Driving,12000
+2019,SA,Drink Driving,8200
+2019,TAS,Drink Driving,2100
+2019,ACT,Drink Driving,1400
+2019,NT,Drink Driving,2500
+2019,NSW,Drug Driving,29000
+2019,VIC,Drug Driving,24500
+2019,QLD,Drug Driving,14700
+2019,WA,Drug Driving,10100
+2019,SA,Drug Driving,6700
+2019,TAS,Drug Driving,2150
+2019,ACT,Drug Driving,1700
+2019,NT,Drug Driving,2580
+2022,NSW,Speeding,591000
+2022,VIC,Speeding,498000
+2022,QLD,Speeding,301000
+2022,WA,Speeding,203000
+2022,SA,Speeding,134000
+2022,TAS,Speeding,32000
+2022,ACT,Speeding,25500
+2022,NT,Speeding,17000
+2022,NSW,Mobile Phone,158000
+2022,VIC,Mobile Phone,136000
+2022,QLD,Mobile Phone,82000
+2022,WA,Mobile Phone,60000
+2022,SA,Mobile Phone,39000
+2022,TAS,Mobile Phone,9400
+2022,ACT,Mobile Phone,7800
+2022,NT,Mobile Phone,5200
+2022,NSW,Drink Driving,28000
+2022,VIC,Drink Driving,25000
+2022,QLD,Drink Driving,14000
+2022,WA,Drink Driving,11000
+2022,SA,Drink Driving,7500
+2022,TAS,Drink Driving,1900
+2022,ACT,Drink Driving,1300
+2022,NT,Drink Driving,2300
+2022,NSW,Drug Driving,41000
+2022,VIC,Drug Driving,34500
+2022,QLD,Drug Driving,20700
+2022,WA,Drug Driving,14300
+2022,SA,Drug Driving,9500
+2022,TAS,Drug Driving,3050
+2022,ACT,Drug Driving,2400
+2022,NT,Drug Driving,3650
+2023,NSW,Speeding,612000
+2023,VIC,Speeding,511000
+2023,QLD,Speeding,314000
+2023,WA,Speeding,211000
+2023,SA,Speeding,139000
+2023,TAS,Speeding,33500
+2023,ACT,Speeding,26500
+2023,NT,Speeding,17800
+2023,NSW,Mobile Phone,171000
+2023,VIC,Mobile Phone,148000
+2023,QLD,Mobile Phone,89000
+2023,WA,Mobile Phone,65000
+2023,SA,Mobile Phone,42000
+2023,TAS,Mobile Phone,10200
+2023,ACT,Mobile Phone,8500
+2023,NT,Mobile Phone,5700
+2023,NSW,Drink Driving,27000
+2023,VIC,Drink Driving,24000
+2023,QLD,Drink Driving,13500
+2023,WA,Drink Driving,10500
+2023,SA,Drink Driving,7200
+2023,TAS,Drink Driving,1800
+2023,ACT,Drink Driving,1200
+2023,NT,Drink Driving,2200
+2023,NSW,Drug Driving,48000
+2023,VIC,Drug Driving,40500
+2023,QLD,Drug Driving,24300
+2023,WA,Drug Driving,16800
+2023,SA,Drug Driving,11200
+2023,TAS,Drug Driving,3600
+2023,ACT,Drug Driving,2850
+2023,NT,Drug Driving,4300

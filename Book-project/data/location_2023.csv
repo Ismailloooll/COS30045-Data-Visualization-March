@@ -1,0 +1,17 @@
+location_type,offence_type,count
+Metropolitan,Speeding,1048000
+Regional,Speeding,512000
+Rural,Speeding,314000
+Remote,Speeding,126000
+Metropolitan,Mobile Phone,589000
+Regional,Mobile Phone,198000
+Rural,Mobile Phone,89000
+Remote,Mobile Phone,28000
+Metropolitan,Drink Driving,42000
+Regional,Drink Driving,31000
+Rural,Drink Driving,26000
+Remote,Drink Driving,13000
+Metropolitan,Drug Driving,68000
+Regional,Drug Driving,54000
+Rural,Drug Driving,42000
+Remote,Drug Driving,18000

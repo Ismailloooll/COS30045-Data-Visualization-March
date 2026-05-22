@@ -1,0 +1,21 @@
+age_group,offence_type,count,state
+17 and under,Speeding,28400,All
+18-25,Speeding,312000,All
+26-39,Speeding,498000,All
+40-59,Speeding,571000,All
+60 and over,Speeding,264000,All
+17 and under,Mobile Phone,9200,All
+18-25,Mobile Phone,198000,All
+26-39,Mobile Phone,289000,All
+40-59,Mobile Phone,221000,All
+60 and over,Mobile Phone,62000,All
+17 and under,Drink Driving,4800,All
+18-25,Drink Driving,31000,All
+26-39,Drink Driving,28500,All
+40-59,Drink Driving,19800,All
+60 and over,Drink Driving,8100,All
+17 and under,Drug Driving,2100,All
+18-25,Drug Driving,38200,All
+26-39,Drug Driving,51400,All
+40-59,Drug Driving,29600,All
+60 and over,Drug Driving,7200,All

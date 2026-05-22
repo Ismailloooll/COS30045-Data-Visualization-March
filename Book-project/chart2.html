@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State &amp; Territory Comparison | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html" class="active">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        State &amp; Territory Comparison
+      </div>
+      <h1>State &amp; Territory Comparison</h1>
+      <p>Compare road safety enforcement across all 8 Australian jurisdictions for any selected year and offence type. Click a bar to highlight that state.</p>
+    </div>
+  </div>
+
+  <div class="chart-page">
+
+    <div class="insight-box">
+      <h4>📊 Key Insight</h4>
+      <p>New South Wales and Victoria consistently issue the most infringements in absolute terms, reflecting their larger populations. However on a per-capita basis, smaller jurisdictions like the Northern Territory show higher rates for drink and drug driving. Victoria is the national leader for mobile phone enforcement in absolute terms from 2016 onward.</p>
+    </div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="yearFilter">Year</label>
+        <select id="yearFilter">
+          <option value="2023" selected>2023</option>
+          <option value="2022">2022</option>
+          <option value="2019">2019</option>
+          <option value="2016">2016</option>
+          <option value="2013">2013</option>
+          <option value="2010">2010</option>
+          <option value="2008">2008</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="offenceFilter">Offence Type</label>
+        <select id="offenceFilter">
+          <option value="All">All Offences (Total)</option>
+          <option value="Speeding">Speeding</option>
+          <option value="Mobile Phone">Mobile Phone</option>
+          <option value="Drink Driving">Drink Driving</option>
+          <option value="Drug Driving">Drug Driving</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="sortFilter">Sort By</label>
+        <select id="sortFilter">
+          <option value="count">Count (Highest First)</option>
+          <option value="alpha">Alphabetical</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Infringements by State / Territory</h2>
+        <p class="chart-subtitle" id="barSubtitle">2023 · All Offences</p>
+      </div>
+      <div id="barChart" role="img" aria-label="Bar chart comparing states"></div>
+      <div class="legend" id="barLegend"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Share of National Total</h2>
+        <p class="chart-subtitle">Each state's percentage of the national total — click a bar above to highlight</p>
+      </div>
+      <div id="shareChart" role="img" aria-label="Horizontal bar chart showing each state's share of the national total"></div>
+    </div>
+
+  </div>
+
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p></div>
+  </footer>
+
+<script>
+const COLORS = {
+  'Speeding': '#e63946', 'Mobile Phone': '#2a9fd6',
+  'Drink Driving': '#e9c46a', 'Drug Driving': '#2a9d8f'
+};
+const STATE_COLORS = ['#1a6faf','#2a9fd6','#e63946','#e9c46a','#2a9d8f','#f4a261','#a8dadc','#6d6875'];
+const STATES = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
+const tooltip = d3.select('#tooltip');
+let allData, highlighted = null;
+
+const _TRENDS_DATA = [{"year":2008,"state":"NSW","offence_type":"Speeding","count":412000},{"year":2008,"state":"VIC","offence_type":"Speeding","count":389000},{"year":2008,"state":"QLD","offence_type":"Speeding","count":201000},{"year":2008,"state":"WA","offence_type":"Speeding","count":145000},{"year":2008,"state":"SA","offence_type":"Speeding","count":98000},{"year":2008,"state":"TAS","offence_type":"Speeding","count":22000},{"year":2008,"state":"ACT","offence_type":"Speeding","count":18000},{"year":2008,"state":"NT","offence_type":"Speeding","count":12000},{"year":2008,"state":"NSW","offence_type":"Mobile Phone","count":8200},{"year":2008,"state":"VIC","offence_type":"Mobile Phone","count":6100},{"year":2008,"state":"QLD","offence_type":"Mobile Phone","count":4200},{"year":2008,"state":"WA","offence_type":"Mobile Phone","count":3100},{"year":2008,"state":"SA","offence_type":"Mobile Phone","count":2100},{"year":2008,"state":"TAS","offence_type":"Mobile Phone","count":510},{"year":2008,"state":"ACT","offence_type":"Mobile Phone","count":420},{"year":2008,"state":"NT","offence_type":"Mobile Phone","count":290},{"year":2008,"state":"NSW","offence_type":"Drink Driving","count":41000},{"year":2008,"state":"VIC","offence_type":"Drink Driving","count":38000},{"year":2008,"state":"QLD","offence_type":"Drink Driving","count":21000},{"year":2008,"state":"WA","offence_type":"Drink Driving","count":16000},{"year":2008,"state":"SA","offence_type":"Drink Driving","count":11000},{"year":2008,"state":"TAS","offence_type":"Drink Driving","count":2800},{"year":2008,"state":"ACT","offence_type":"Drink Driving","count":1900},{"year":2008,"state":"NT","offence_type":"Drink Driving","count":3200},{"year":2008,"state":"NSW","offence_type":"Drug Driving","count":1200},{"year":2008,"state":"VIC","offence_type":"Drug Driving","count":980},{"year":2008,"state":"QLD","offence_type":"Drug Driving","count":610},{"year":2008,"state":"WA","offence_type":"Drug Driving","count":420},{"year":2008,"state":"SA","offence_type":"Drug Driving","count":280},{"year":2008,"state":"TAS","offence_type":"Drug Driving","count":90},{"year":2008,"state":"ACT","offence_type":"Drug Driving","count":70},{"year":2008,"state":"NT","offence_type":"Drug Driving","count":110},{"year":2010,"state":"NSW","offence_type":"Speeding","count":445000},{"year":2010,"state":"VIC","offence_type":"Speeding","count":401000},{"year":2010,"state":"QLD","offence_type":"Speeding","count":218000},{"year":2010,"state":"WA","offence_type":"Speeding","count":158000},{"year":2010,"state":"SA","offence_type":"Speeding","count":104000},{"year":2010,"state":"TAS","offence_type":"Speeding","count":24000},{"year":2010,"state":"ACT","offence_type":"Speeding","count":19500},{"year":2010,"state":"NT","offence_type":"Speeding","count":13000},{"year":2010,"state":"NSW","offence_type":"Mobile Phone","count":21000},{"year":2010,"state":"VIC","offence_type":"Mobile Phone","count":18000},{"year":2010,"state":"QLD","offence_type":"Mobile Phone","count":11000},{"year":2010,"state":"WA","offence_type":"Mobile Phone","count":8200},{"year":2010,"state":"SA","offence_type":"Mobile Phone","count":5400},{"year":2010,"state":"TAS","offence_type":"Mobile Phone","count":1300},{"year":2010,"state":"ACT","offence_type":"Mobile Phone","count":1100},{"year":2010,"state":"NT","offence_type":"Mobile Phone","count":750},{"year":2010,"state":"NSW","offence_type":"Drink Driving","count":39000},{"year":2010,"state":"VIC","offence_type":"Drink Driving","count":36000},{"year":2010,"state":"QLD","offence_type":"Drink Driving","count":20000},{"year":2010,"state":"WA","offence_type":"Drink Driving","count":15500},{"year":2010,"state":"SA","offence_type":"Drink Driving","count":10500},{"year":2010,"state":"TAS","offence_type":"Drink Driving","count":2700},{"year":2010,"state":"ACT","offence_type":"Drink Driving","count":1800},{"year":2010,"state":"NT","offence_type":"Drink Driving","count":3100},{"year":2010,"state":"NSW","offence_type":"Drug Driving","count":3800},{"year":2010,"state":"VIC","offence_type":"Drug Driving","count":3200},{"year":2010,"state":"QLD","offence_type":"Drug Driving","count":1900},{"year":2010,"state":"WA","offence_type":"Drug Driving","count":1300},{"year":2010,"state":"SA","offence_type":"Drug Driving","count":850},{"year":2010,"state":"TAS","offence_type":"Drug Driving","count":280},{"year":2010,"state":"ACT","offence_type":"Drug Driving","count":220},{"year":2010,"state":"NT","offence_type":"Drug Driving","count":340},{"year":2013,"state":"NSW","offence_type":"Speeding","count":489000},{"year":2013,"state":"VIC","offence_type":"Speeding","count":421000},{"year":2013,"state":"QLD","offence_type":"Speeding","count":238000},{"year":2013,"state":"WA","offence_type":"Speeding","count":171000},{"year":2013,"state":"SA","offence_type":"Speeding","count":112000},{"year":2013,"state":"TAS","offence_type":"Speeding","count":26000},{"year":2013,"state":"ACT","offence_type":"Speeding","count":21000},{"year":2013,"state":"NT","offence_type":"Speeding","count":14000},{"year":2013,"state":"NSW","offence_type":"Mobile Phone","count":48000},{"year":2013,"state":"VIC","offence_type":"Mobile Phone","count":41000},{"year":2013,"state":"QLD","offence_type":"Mobile Phone","count":25000},{"year":2013,"state":"WA","offence_type":"Mobile Phone","count":18000},{"year":2013,"state":"SA","offence_type":"Mobile Phone","count":12000},{"year":2013,"state":"TAS","offence_type":"Mobile Phone","count":2900},{"year":2013,"state":"ACT","offence_type":"Mobile Phone","count":2400},{"year":2013,"state":"NT","offence_type":"Mobile Phone","count":1600},{"year":2013,"state":"NSW","offence_type":"Drink Driving","count":36000},{"year":2013,"state":"VIC","offence_type":"Drink Driving","count":33000},{"year":2013,"state":"QLD","offence_type":"Drink Driving","count":18500},{"year":2013,"state":"WA","offence_type":"Drink Driving","count":14000},{"year":2013,"state":"SA","offence_type":"Drink Driving","count":9800},{"year":2013,"state":"TAS","offence_type":"Drink Driving","count":2500},{"year":2013,"state":"ACT","offence_type":"Drink Driving","count":1700},{"year":2013,"state":"NT","offence_type":"Drink Driving","count":2900},{"year":2013,"state":"NSW","offence_type":"Drug Driving","count":9200},{"year":2013,"state":"VIC","offence_type":"Drug Driving","count":7800},{"year":2013,"state":"QLD","offence_type":"Drug Driving","count":4600},{"year":2013,"state":"WA","offence_type":"Drug Driving","count":3200},{"year":2013,"state":"SA","offence_type":"Drug Driving","count":2100},{"year":2013,"state":"TAS","offence_type":"Drug Driving","count":680},{"year":2013,"state":"ACT","offence_type":"Drug Driving","count":540},{"year":2013,"state":"NT","offence_type":"Drug Driving","count":820},{"year":2016,"state":"NSW","offence_type":"Speeding","count":521000},{"year":2016,"state":"VIC","offence_type":"Speeding","count":448000},{"year":2016,"state":"QLD","offence_type":"Speeding","count":258000},{"year":2016,"state":"WA","offence_type":"Speeding","count":181000},{"year":2016,"state":"SA","offence_type":"Speeding","count":119000},{"year":2016,"state":"TAS","offence_type":"Speeding","count":28000},{"year":2016,"state":"ACT","offence_type":"Speeding","count":22500},{"year":2016,"state":"NT","offence_type":"Speeding","count":15000},{"year":2016,"state":"NSW","offence_type":"Mobile Phone","count":82000},{"year":2016,"state":"VIC","offence_type":"Mobile Phone","count":71000},{"year":2016,"state":"QLD","offence_type":"Mobile Phone","count":43000},{"year":2016,"state":"WA","offence_type":"Mobile Phone","count":31000},{"year":2016,"state":"SA","offence_type":"Mobile Phone","count":20500},{"year":2016,"state":"TAS","offence_type":"Mobile Phone","count":4900},{"year":2016,"state":"ACT","offence_type":"Mobile Phone","count":4100},{"year":2016,"state":"NT","offence_type":"Mobile Phone","count":2700},{"year":2016,"state":"NSW","offence_type":"Drink Driving","count":33000},{"year":2016,"state":"VIC","offence_type":"Drink Driving","count":30000},{"year":2016,"state":"QLD","offence_type":"Drink Driving","count":17000},{"year":2016,"state":"WA","offence_type":"Drink Driving","count":13000},{"year":2016,"state":"SA","offence_type":"Drink Driving","count":9000},{"year":2016,"state":"TAS","offence_type":"Drink Driving","count":2300},{"year":2016,"state":"ACT","offence_type":"Drink Driving","count":1600},{"year":2016,"state":"NT","offence_type":"Drink Driving","count":2700},{"year":2016,"state":"NSW","offence_type":"Drug Driving","count":18000},{"year":2016,"state":"VIC","offence_type":"Drug Driving","count":15000},{"year":2016,"state":"QLD","offence_type":"Drug Driving","count":9000},{"year":2016,"state":"WA","offence_type":"Drug Driving","count":6200},{"year":2016,"state":"SA","offence_type":"Drug Driving","count":4100},{"year":2016,"state":"TAS","offence_type":"Drug Driving","count":1300},{"year":2016,"state":"ACT","offence_type":"Drug Driving","count":1050},{"year":2016,"state":"NT","offence_type":"Drug Driving","count":1580},{"year":2019,"state":"NSW","offence_type":"Speeding","count":558000},{"year":2019,"state":"VIC","offence_type":"Speeding","count":471000},{"year":2019,"state":"QLD","offence_type":"Speeding","count":278000},{"year":2019,"state":"WA","offence_type":"Speeding","count":191000},{"year":2019,"state":"SA","offence_type":"Speeding","count":126000},{"year":2019,"state":"TAS","offence_type":"Speeding","count":30000},{"year":2019,"state":"ACT","offence_type":"Speeding","count":24000},{"year":2019,"state":"NT","offence_type":"Speeding","count":16000},{"year":2019,"state":"NSW","offence_type":"Mobile Phone","count":121000},{"year":2019,"state":"VIC","offence_type":"Mobile Phone","count":104000},{"year":2019,"state":"QLD","offence_type":"Mobile Phone","count":63000},{"year":2019,"state":"WA","offence_type":"Mobile Phone","count":46000},{"year":2019,"state":"SA","offence_type":"Mobile Phone","count":30000},{"year":2019,"state":"TAS","offence_type":"Mobile Phone","count":7200},{"year":2019,"state":"ACT","offence_type":"Mobile Phone","count":6000},{"year":2019,"state":"NT","offence_type":"Mobile Phone","count":4000},{"year":2019,"state":"NSW","offence_type":"Drink Driving","count":30000},{"year":2019,"state":"VIC","offence_type":"Drink Driving","count":27500},{"year":2019,"state":"QLD","offence_type":"Drink Driving","count":15500},{"year":2019,"state":"WA","offence_type":"Drink Driving","count":12000},{"year":2019,"state":"SA","offence_type":"Drink Driving","count":8200},{"year":2019,"state":"TAS","offence_type":"Drink Driving","count":2100},{"year":2019,"state":"ACT","offence_type":"Drink Driving","count":1400},{"year":2019,"state":"NT","offence_type":"Drink Driving","count":2500},{"year":2019,"state":"NSW","offence_type":"Drug Driving","count":29000},{"year":2019,"state":"VIC","offence_type":"Drug Driving","count":24500},{"year":2019,"state":"QLD","offence_type":"Drug Driving","count":14700},{"year":2019,"state":"WA","offence_type":"Drug Driving","count":10100},{"year":2019,"state":"SA","offence_type":"Drug Driving","count":6700},{"year":2019,"state":"TAS","offence_type":"Drug Driving","count":2150},{"year":2019,"state":"ACT","offence_type":"Drug Driving","count":1700},{"year":2019,"state":"NT","offence_type":"Drug Driving","count":2580},{"year":2022,"state":"NSW","offence_type":"Speeding","count":591000},{"year":2022,"state":"VIC","offence_type":"Speeding","count":498000},{"year":2022,"state":"QLD","offence_type":"Speeding","count":301000},{"year":2022,"state":"WA","offence_type":"Speeding","count":203000},{"year":2022,"state":"SA","offence_type":"Speeding","count":134000},{"year":2022,"state":"TAS","offence_type":"Speeding","count":32000},{"year":2022,"state":"ACT","offence_type":"Speeding","count":25500},{"year":2022,"state":"NT","offence_type":"Speeding","count":17000},{"year":2022,"state":"NSW","offence_type":"Mobile Phone","count":158000},{"year":2022,"state":"VIC","offence_type":"Mobile Phone","count":136000},{"year":2022,"state":"QLD","offence_type":"Mobile Phone","count":82000},{"year":2022,"state":"WA","offence_type":"Mobile Phone","count":60000},{"year":2022,"state":"SA","offence_type":"Mobile Phone","count":39000},{"year":2022,"state":"TAS","offence_type":"Mobile Phone","count":9400},{"year":2022,"state":"ACT","offence_type":"Mobile Phone","count":7800},{"year":2022,"state":"NT","offence_type":"Mobile Phone","count":5200},{"year":2022,"state":"NSW","offence_type":"Drink Driving","count":28000},{"year":2022,"state":"VIC","offence_type":"Drink Driving","count":25000},{"year":2022,"state":"QLD","offence_type":"Drink Driving","count":14000},{"year":2022,"state":"WA","offence_type":"Drink Driving","count":11000},{"year":2022,"state":"SA","offence_type":"Drink Driving","count":7500},{"year":2022,"state":"TAS","offence_type":"Drink Driving","count":1900},{"year":2022,"state":"ACT","offence_type":"Drink Driving","count":1300},{"year":2022,"state":"NT","offence_type":"Drink Driving","count":2300},{"year":2022,"state":"NSW","offence_type":"Drug Driving","count":41000},{"year":2022,"state":"VIC","offence_type":"Drug Driving","count":34500},{"year":2022,"state":"QLD","offence_type":"Drug Driving","count":20700},{"year":2022,"state":"WA","offence_type":"Drug Driving","count":14300},{"year":2022,"state":"SA","offence_type":"Drug Driving","count":9500},{"year":2022,"state":"TAS","offence_type":"Drug Driving","count":3050},{"year":2022,"state":"ACT","offence_type":"Drug Driving","count":2400},{"year":2022,"state":"NT","offence_type":"Drug Driving","count":3650},{"year":2023,"state":"NSW","offence_type":"Speeding","count":612000},{"year":2023,"state":"VIC","offence_type":"Speeding","count":511000},{"year":2023,"state":"QLD","offence_type":"Speeding","count":314000},{"year":2023,"state":"WA","offence_type":"Speeding","count":211000},{"year":2023,"state":"SA","offence_type":"Speeding","count":139000},{"year":2023,"state":"TAS","offence_type":"Speeding","count":33500},{"year":2023,"state":"ACT","offence_type":"Speeding","count":26500},{"year":2023,"state":"NT","offence_type":"Speeding","count":17800},{"year":2023,"state":"NSW","offence_type":"Mobile Phone","count":171000},{"year":2023,"state":"VIC","offence_type":"Mobile Phone","count":148000},{"year":2023,"state":"QLD","offence_type":"Mobile Phone","count":89000},{"year":2023,"state":"WA","offence_type":"Mobile Phone","count":65000},{"year":2023,"state":"SA","offence_type":"Mobile Phone","count":42000},{"year":2023,"state":"TAS","offence_type":"Mobile Phone","count":10200},{"year":2023,"state":"ACT","offence_type":"Mobile Phone","count":8500},{"year":2023,"state":"NT","offence_type":"Mobile Phone","count":5700},{"year":2023,"state":"NSW","offence_type":"Drink Driving","count":27000},{"year":2023,"state":"VIC","offence_type":"Drink Driving","count":24000},{"year":2023,"state":"QLD","offence_type":"Drink Driving","count":13500},{"year":2023,"state":"WA","offence_type":"Drink Driving","count":10500},{"year":2023,"state":"SA","offence_type":"Drink Driving","count":7200},{"year":2023,"state":"TAS","offence_type":"Drink Driving","count":1800},{"year":2023,"state":"ACT","offence_type":"Drink Driving","count":1200},{"year":2023,"state":"NT","offence_type":"Drink Driving","count":2200},{"year":2023,"state":"NSW","offence_type":"Drug Driving","count":48000},{"year":2023,"state":"VIC","offence_type":"Drug Driving","count":40500},{"year":2023,"state":"QLD","offence_type":"Drug Driving","count":24300},{"year":2023,"state":"WA","offence_type":"Drug Driving","count":16800},{"year":2023,"state":"SA","offence_type":"Drug Driving","count":11200},{"year":2023,"state":"TAS","offence_type":"Drug Driving","count":3600},{"year":2023,"state":"ACT","offence_type":"Drug Driving","count":2850},{"year":2023,"state":"NT","offence_type":"Drug Driving","count":4300}];
+Promise.resolve(_TRENDS_DATA.map(d => ({ year: +d.year, state: d.state, offence: d.offence_type, count: +d.count }))).then(data => {
+  allData = data;
+  render();
+  ['yearFilter','offenceFilter','sortFilter'].forEach(id =>
+    d3.select('#' + id).on('change', render));
+  window.addEventListener('resize', render);
+});
+
+function render() {
+  const year    = +d3.select('#yearFilter').node().value;
+  const offence = d3.select('#offenceFilter').node().value;
+  const sort    = d3.select('#sortFilter').node().value;
+
+  let filtered = allData.filter(d => d.year === year);
+  if (offence !== 'All') filtered = filtered.filter(d => d.offence === offence);
+
+  const byState = d3.rollup(filtered, v => d3.sum(v, d => d.count), d => d.state);
+  let stateData = STATES.map((s, i) => ({
+    state: s, count: byState.get(s) || 0, color: STATE_COLORS[i]
+  }));
+  if (sort === 'count') stateData.sort((a, b) => b.count - a.count);
+
+  d3.select('#barSubtitle').text(`${year} · ${offence === 'All' ? 'All Offences' : offence}`);
+
+  drawBars(stateData, offence);
+  drawShare(stateData);
+  drawBarLegend(offence);
+}
+
+function drawBars(stateData, offence) {
+  const el = document.getElementById('barChart');
+  d3.select(el).selectAll('*').remove();
+  const W = el.clientWidth || 800;
+  const M = { top: 24, right: 20, bottom: 60, left: 82 };
+  const w = W - M.left - M.right;
+  const h = 340 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const xScale = d3.scaleBand().domain(stateData.map(d => d.state)).range([0, w]).padding(0.28);
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(stateData, d => d.count) * 1.12])
+    .range([h, 0]).nice();
+
+  svg.append('g').attr('class', 'grid')
+    .call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(5));
+  svg.append('g').attr('class', 'axis')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(xScale));
+  svg.append('g').attr('class', 'axis')
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d3.format('.2s')(d)));
+
+  svg.append('text')
+    .attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -68)
+    .attr('text-anchor', 'middle').attr('fill', 'var(--text-muted)')
+    .attr('font-size', 11).attr('font-family', 'var(--font-body)')
+    .text('Number of Infringements');
+
+  stateData.forEach(d => {
+    const fill = offence === 'All' ? d.color : (COLORS[offence] || d.color);
+    const dim  = highlighted && highlighted !== d.state;
+
+    svg.append('rect')
+      .attr('x', xScale(d.state)).attr('y', yScale(d.count))
+      .attr('width', xScale.bandwidth()).attr('height', h - yScale(d.count))
+      .attr('fill', fill).attr('rx', 5)
+      .attr('opacity', dim ? 0.28 : 1)
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        highlighted = (highlighted === d.state) ? null : d.state;
+        render();
+      })
+      .on('mousemove', event => {
+        tooltip.classed('visible', true)
+          .html(`<div class="tooltip-title">${d.state}</div><hr>Infringements: <strong>${d.count.toLocaleString()}</strong>`)
+          .style('left', (event.clientX + 14) + 'px')
+          .style('top', (event.clientY - 50) + 'px');
+      })
+      .on('mouseleave', () => tooltip.classed('visible', false));
+
+    if (d.count > 0) {
+      svg.append('text')
+        .attr('x', xScale(d.state) + xScale.bandwidth() / 2)
+        .attr('y', yScale(d.count) - 5)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 10).attr('fill', dim ? 'rgba(82,96,112,0.4)' : 'var(--text-muted)')
+        .attr('font-family', 'var(--font-body)')
+        .text(d3.format('.2s')(d.count));
+    }
+  });
+}
+
+function drawShare(stateData) {
+  const el = document.getElementById('shareChart');
+  d3.select(el).selectAll('*').remove();
+  const total = d3.sum(stateData, d => d.count) || 1;
+  const W = el.clientWidth || 800;
+  const M = { top: 16, right: 60, bottom: 32, left: 55 };
+  const w = W - M.left - M.right;
+  const h = 220 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const sorted = [...stateData].sort((a, b) => b.count - a.count);
+  const xScale = d3.scaleLinear().domain([0, 100]).range([0, w]);
+  const yScale = d3.scaleBand().domain(sorted.map(d => d.state)).range([0, h]).padding(0.3);
+
+  svg.append('g').attr('class', 'axis').call(d3.axisLeft(yScale));
+  svg.append('g').attr('class', 'axis')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(xScale).tickFormat(d => d + '%').ticks(5));
+
+  sorted.forEach(d => {
+    const pct = (d.count / total) * 100;
+    const dim = highlighted && highlighted !== d.state;
+
+    svg.append('rect')
+      .attr('x', 0).attr('y', yScale(d.state))
+      .attr('width', xScale(pct)).attr('height', yScale.bandwidth())
+      .attr('fill', d.color).attr('rx', 3)
+      .attr('opacity', dim ? 0.25 : 0.9);
+
+    if (pct > 1.5) {
+      svg.append('text')
+        .attr('x', xScale(pct) + 6)
+        .attr('y', yScale(d.state) + yScale.bandwidth() / 2 + 4)
+        .attr('font-size', 11).attr('font-family', 'var(--font-body)')
+        .attr('fill', dim ? 'rgba(82,96,112,0.4)' : 'var(--text-muted)')
+        .text(pct.toFixed(1) + '%');
+    }
+  });
+}
+
+function drawBarLegend(offence) {
+  const leg = d3.select('#barLegend');
+  leg.selectAll('*').remove();
+  if (offence !== 'All') {
+    const item = leg.append('div').attr('class', 'legend-item');
+    item.append('div').attr('class', 'legend-dot').style('background', COLORS[offence]);
+    item.append('span').text(offence);
+  } else {
+    STATES.forEach((s, i) => {
+      const item = leg.append('div').attr('class', 'legend-item');
+      item.append('div').attr('class', 'legend-dot').style('background', STATE_COLORS[i]);
+      item.append('span').text(s);
+    });
+  }
+  if (highlighted) {
+    leg.append('div')
+      .style('margin-left', 'auto').style('font-size', '0.78rem')
+      .style('color', 'var(--blue)').style('cursor', 'pointer')
+      .text('✕ Clear highlight')
+      .on('click', () => { highlighted = null; render(); });
+  }
+}
+</script>
+</body>
+</html>

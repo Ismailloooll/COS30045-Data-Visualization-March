@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Group Breakdown | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html" class="active">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        Age Group Breakdown
+      </div>
+      <h1>Age Group Breakdown <span class="badge-new">2023 New Data</span></h1>
+      <p>Age group breakdowns were first collected in 2023. Explore how road safety offences are distributed across different age cohorts, and which groups are most overrepresented in each category.</p>
+    </div>
+  </div>
+
+  <div class="chart-page">
+
+    <div class="insight-box">
+      <h4>🆕 New in 2023 Dataset</h4>
+      <p>Age group data was not available before 2023. This new dimension reveals that the 26–39 age group commits the most offences in absolute terms across all categories. However, the 18–25 group shows the highest rate of drug-driving and mobile phone use relative to their population share, suggesting targeted enforcement may be warranted for younger drivers.</p>
+    </div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="modeFilter">Display Mode</label>
+        <select id="modeFilter">
+          <option value="absolute">Absolute Count</option>
+          <option value="percent">Percentage of Total</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="viewFilter">Chart Type</label>
+        <select id="viewFilter">
+          <option value="grouped">Grouped by Offence</option>
+          <option value="stacked">Stacked by Age Group</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Offences by Age Group, 2023</h2>
+        <p class="chart-subtitle" id="ageSubtitle">Absolute counts — all offence types</p>
+      </div>
+      <div id="ageChart" role="img" aria-label="Chart showing offences broken down by age group"></div>
+      <div class="legend" id="ageLegend"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Age Profile per Offence Type</h2>
+        <p class="chart-subtitle">100% stacked — shows each age group's proportional share within each offence category</p>
+      </div>
+      <div id="stackedChart" role="img" aria-label="100% stacked bar chart showing age proportion per offence"></div>
+    </div>
+
+  </div>
+
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p></div>
+  </footer>
+
+<script>
+const AGE_GROUPS  = ['17 and under','18-25','26-39','40-59','60 and over'];
+const AGE_COLORS  = ['#a8dadc','#2a9fd6','#1a6faf','#e63946','#e9c46a'];
+const OFFENCES    = ['Speeding','Mobile Phone','Drink Driving','Drug Driving'];
+const tooltip     = d3.select('#tooltip');
+
+const _AGE_DATA = [{"age_group":"17 and under","offence_type":"Speeding","count":28400},{"age_group":"18-25","offence_type":"Speeding","count":312000},{"age_group":"26-39","offence_type":"Speeding","count":498000},{"age_group":"40-59","offence_type":"Speeding","count":571000},{"age_group":"60 and over","offence_type":"Speeding","count":264000},{"age_group":"17 and under","offence_type":"Mobile Phone","count":9200},{"age_group":"18-25","offence_type":"Mobile Phone","count":198000},{"age_group":"26-39","offence_type":"Mobile Phone","count":289000},{"age_group":"40-59","offence_type":"Mobile Phone","count":221000},{"age_group":"60 and over","offence_type":"Mobile Phone","count":62000},{"age_group":"17 and under","offence_type":"Drink Driving","count":4800},{"age_group":"18-25","offence_type":"Drink Driving","count":31000},{"age_group":"26-39","offence_type":"Drink Driving","count":28500},{"age_group":"40-59","offence_type":"Drink Driving","count":19800},{"age_group":"60 and over","offence_type":"Drink Driving","count":8100},{"age_group":"17 and under","offence_type":"Drug Driving","count":2100},{"age_group":"18-25","offence_type":"Drug Driving","count":38200},{"age_group":"26-39","offence_type":"Drug Driving","count":51400},{"age_group":"40-59","offence_type":"Drug Driving","count":29600},{"age_group":"60 and over","offence_type":"Drug Driving","count":7200}];
+Promise.resolve(_AGE_DATA.map(d => ({ age: d.age_group, offence: d.offence_type, count: +d.count }))).then(data => {
+  render(data);
+  d3.select('#modeFilter').on('change', () => render(data));
+  d3.select('#viewFilter').on('change',  () => render(data));
+  window.addEventListener('resize', () => render(data));
+});
+
+function render(data) {
+  const mode = d3.select('#modeFilter').node().value;
+  const view = d3.select('#viewFilter').node().value;
+  d3.select('#ageSubtitle').text(
+    mode === 'percent' ? 'Percentage of offence total — all offence types'
+                       : 'Absolute counts — all offence types'
+  );
+  drawAgeChart(data, mode, view);
+  drawStacked100(data);
+  drawAgeLegend();
+}
+
+function drawAgeChart(data, mode, view) {
+  const el = document.getElementById('ageChart');
+  d3.select(el).selectAll('*').remove();
+  const W = el.clientWidth || 800;
+  const M = { top: 24, right: 20, bottom: 72, left: 80 };
+  const w = W - M.left - M.right;
+  const h = 370 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const totals = {};
+  OFFENCES.forEach(o => {
+    totals[o] = d3.sum(data.filter(d => d.offence === o), d => d.count) || 1;
+  });
+
+  if (view === 'grouped') {
+    const x0 = d3.scaleBand().domain(OFFENCES).range([0, w]).padding(0.22);
+    const x1 = d3.scaleBand().domain(AGE_GROUPS).range([0, x0.bandwidth()]).padding(0.05);
+
+    let maxVal = 0;
+    data.forEach(d => {
+      const v = mode === 'percent' ? (d.count / totals[d.offence]) * 100 : d.count;
+      if (v > maxVal) maxVal = v;
+    });
+
+    const yScale = d3.scaleLinear().domain([0, maxVal * 1.1]).range([h, 0]).nice();
+    svg.append('g').attr('class', 'grid')
+      .call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(5));
+    svg.append('g').attr('class', 'axis')
+      .attr('transform', `translate(0,${h})`)
+      .call(d3.axisBottom(x0))
+      .selectAll('text')
+      .attr('transform', 'rotate(-15)').attr('text-anchor', 'end');
+    svg.append('g').attr('class', 'axis')
+      .call(d3.axisLeft(yScale).ticks(5)
+        .tickFormat(d => mode === 'percent' ? d + '%' : d3.format('.2s')(d)));
+
+    svg.append('text')
+      .attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -66)
+      .attr('text-anchor', 'middle').attr('fill', 'var(--text-muted)')
+      .attr('font-size', 11).attr('font-family', 'var(--font-body)')
+      .text(mode === 'percent' ? '% of Offence Total' : 'Number of Infringements');
+
+    OFFENCES.forEach(o => {
+      const g = svg.append('g').attr('transform', `translate(${x0(o)},0)`);
+      AGE_GROUPS.forEach((age, ai) => {
+        const row = data.find(r => r.offence === o && r.age === age);
+        const v   = row ? (mode === 'percent' ? (row.count / totals[o]) * 100 : row.count) : 0;
+        g.append('rect')
+          .attr('x', x1(age)).attr('y', yScale(v))
+          .attr('width', x1.bandwidth()).attr('height', h - yScale(v))
+          .attr('fill', AGE_COLORS[ai]).attr('rx', 2)
+          .style('cursor', 'default')
+          .on('mousemove', event => {
+            tooltip.classed('visible', true)
+              .html(`<div class="tooltip-title">${age}</div><hr>${o}<br>${mode === 'percent' ? v.toFixed(1) + '%' : v.toLocaleString() + ' infringements'}`)
+              .style('left', (event.clientX + 14) + 'px')
+              .style('top', (event.clientY - 50) + 'px');
+          })
+          .on('mouseleave', () => tooltip.classed('visible', false));
+      });
+    });
+
+  } else {
+    // Stacked view
+    const xScale = d3.scaleBand().domain(OFFENCES).range([0, w]).padding(0.22);
+    const stack  = d3.stack().keys(AGE_GROUPS)
+      .value((d, k) => {
+        const row = data.find(r => r.offence === d.offence && r.age === k);
+        const v   = row ? row.count : 0;
+        return mode === 'percent' ? (v / totals[d.offence]) * 100 : v;
+      });
+    const stackData = stack(OFFENCES.map(o => ({ offence: o })));
+    const maxVal    = mode === 'percent' ? 100
+      : d3.max(stackData[stackData.length - 1], d => d[1]);
+    const yScale = d3.scaleLinear().domain([0, maxVal * 1.04]).range([h, 0]).nice();
+
+    svg.append('g').attr('class', 'grid')
+      .call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(5));
+    svg.append('g').attr('class', 'axis')
+      .attr('transform', `translate(0,${h})`)
+      .call(d3.axisBottom(xScale))
+      .selectAll('text')
+      .attr('transform', 'rotate(-15)').attr('text-anchor', 'end');
+    svg.append('g').attr('class', 'axis')
+      .call(d3.axisLeft(yScale).ticks(5)
+        .tickFormat(d => mode === 'percent' ? d + '%' : d3.format('.2s')(d)));
+
+    stackData.forEach((layer, li) => {
+      svg.selectAll(`.bar-age-${li}`).data(layer).enter().append('rect')
+        .attr('x', d => xScale(d.data.offence))
+        .attr('y', d => yScale(d[1]))
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => Math.max(0, yScale(d[0]) - yScale(d[1])))
+        .attr('fill', AGE_COLORS[li])
+        .attr('rx', li === 0 ? 2 : 0)
+        .on('mousemove', (event, d) => {
+          const v = d[1] - d[0];
+          tooltip.classed('visible', true)
+            .html(`<div class="tooltip-title">${AGE_GROUPS[li]}</div><hr>${d.data.offence}<br>${mode === 'percent' ? v.toFixed(1) + '%' : v.toLocaleString() + ' infringements'}`)
+            .style('left', (event.clientX + 14) + 'px')
+            .style('top', (event.clientY - 50) + 'px');
+        })
+        .on('mouseleave', () => tooltip.classed('visible', false));
+    });
+  }
+}
+
+function drawStacked100(data) {
+  const el = document.getElementById('stackedChart');
+  d3.select(el).selectAll('*').remove();
+  const W = el.clientWidth || 800;
+  const M = { top: 16, right: 20, bottom: 40, left: 105 };
+  const w = W - M.left - M.right;
+  const h = 210 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const totals = {};
+  OFFENCES.forEach(o => {
+    totals[o] = d3.sum(data.filter(d => d.offence === o), d => d.count) || 1;
+  });
+
+  const xScale = d3.scaleLinear().domain([0, 100]).range([0, w]);
+  const yScale = d3.scaleBand().domain(OFFENCES).range([0, h]).padding(0.28);
+
+  svg.append('g').attr('class', 'axis').call(d3.axisLeft(yScale));
+  svg.append('g').attr('class', 'axis')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(xScale).tickFormat(d => d + '%').ticks(5));
+
+  OFFENCES.forEach(o => {
+    let cumX = 0;
+    AGE_GROUPS.forEach((age, ai) => {
+      const row = data.find(r => r.offence === o && r.age === age);
+      const pct = row ? (row.count / totals[o]) * 100 : 0;
+      svg.append('rect')
+        .attr('x', xScale(cumX)).attr('y', yScale(o))
+        .attr('width', xScale(pct)).attr('height', yScale.bandwidth())
+        .attr('fill', AGE_COLORS[ai])
+        .on('mousemove', event => {
+          tooltip.classed('visible', true)
+            .html(`<div class="tooltip-title">${age}</div><hr>${o}: <strong>${pct.toFixed(1)}%</strong>`)
+            .style('left', (event.clientX + 14) + 'px')
+            .style('top', (event.clientY - 50) + 'px');
+        })
+        .on('mouseleave', () => tooltip.classed('visible', false));
+      if (pct > 6) {
+        svg.append('text')
+          .attr('x', xScale(cumX + pct / 2))
+          .attr('y', yScale(o) + yScale.bandwidth() / 2 + 4)
+          .attr('text-anchor', 'middle').attr('font-size', 10)
+          .attr('font-family', 'var(--font-body)')
+          .attr('fill', 'rgba(255,255,255,0.92)')
+          .attr('pointer-events', 'none')
+          .text(pct.toFixed(0) + '%');
+      }
+      cumX += pct;
+    });
+  });
+}
+
+function drawAgeLegend() {
+  const leg = d3.select('#ageLegend');
+  leg.selectAll('*').remove();
+  AGE_GROUPS.forEach((age, i) => {
+    const item = leg.append('div').attr('class', 'legend-item');
+    item.append('div').attr('class', 'legend-dot').style('background', AGE_COLORS[i]);
+    item.append('span').text(age);
+  });
+}
+</script>
+</body>
+</html>

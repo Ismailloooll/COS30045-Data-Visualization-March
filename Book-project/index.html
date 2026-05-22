@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Australian Road Safety Enforcement | BITRE · COS30045</title>
+  <meta name="description" content="Interactive visualisation of BITRE Australian road safety enforcement data 2008–2023. COS30045 Data Visualisation Project, Swinburne University.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="nav-dot"></span>
+      <span>BITRE Road Safety</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bg-grid" aria-hidden="true"></div>
+    <div class="hero-bg-glow" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">BITRE · 2008–2023 · Australia</div>
+      <h1 class="hero-title">
+        Road Safety<br>
+        <em>Enforcement</em><br>
+        in Australia
+      </h1>
+      <p class="hero-sub">Explore 15 years of police enforcement data — speeding, mobile phones, drink driving and drug driving — across all states and territories.</p>
+      <div class="hero-stats" aria-label="Key statistics">
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="1884200" aria-label="1,884,200 total 2023 infringements">0</span>
+          <span class="hero-stat-label">2023 Infringements</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="15">0</span>
+          <span class="hero-stat-label">Years of Data</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="8">0</span>
+          <span class="hero-stat-label">Jurisdictions</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="4">0</span>
+          <span class="hero-stat-label">Offence Types</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="chart1.html" class="hero-cta">Explore the Data →</a>
+        <a href="about.html" class="hero-cta-ghost">About the Project</a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <canvas id="heroCanvas"></canvas>
+    </div>
+  </header>
+
+  <!-- DATA STRIP -->
+  <div class="data-strip" aria-label="Dataset summary">
+    <div class="data-strip-inner">
+      <div class="data-strip-item">
+        <span class="data-strip-num">3,760%</span>
+        <span class="data-strip-label">Drug Driving Rise 2008–2023</span>
+      </div>
+      <div class="data-strip-item">
+        <span class="data-strip-num">2,050%</span>
+        <span class="data-strip-label">Mobile Phone Fine Increase</span>
+      </div>
+      <div class="data-strip-item">
+        <span class="data-strip-num">60%+</span>
+        <span class="data-strip-label">Offences by 18–39 Age Group</span>
+      </div>
+      <div class="data-strip-item">
+        <span class="data-strip-num">56%</span>
+        <span class="data-strip-label">Speeding Fines — Metro Areas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY SECTION -->
+  <section class="story">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Key Findings</span>
+        <h2>What does the data tell us?</h2>
+        <p>Three key findings from 15 years of Australian road safety enforcement data.</p>
+      </div>
+      <div class="story-cards">
+        <a href="chart1.html" class="story-card" style="--accent:#e63946">
+          <div class="story-card-num">01</div>
+          <div class="story-card-icon">📱</div>
+          <h3>Mobile Phone Fines Have Surged</h3>
+          <p>Mobile phone infringements rose over <strong>2,000%</strong> between 2008 and 2023 as enforcement ramped up and smartphone use became universal. Drug driving detections rose even more steeply.</p>
+          <span class="story-card-link">See trend chart</span>
+        </a>
+        <a href="chart3.html" class="story-card" style="--accent:#2a9d8f">
+          <div class="story-card-num">02</div>
+          <div class="story-card-icon">👤</div>
+          <h3>18–39 Year Olds Dominate Offences</h3>
+          <p>The 2023 age-group data (new in this dataset) shows drivers aged 18–39 account for over <strong>60%</strong> of drug-driving and mobile phone offences nationally.</p>
+          <span class="story-card-link">See age breakdown</span>
+        </a>
+        <a href="chart4.html" class="story-card" style="--accent:#e9c46a">
+          <div class="story-card-num">03</div>
+          <div class="story-card-icon">📍</div>
+          <h3>Metro Areas Lead Enforcement</h3>
+          <p>Metropolitan areas account for the majority of all infringement types — but rural and remote areas show proportionally higher drink-driving and drug-driving rates.</p>
+          <span class="story-card-link">See location data</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHARTS OVERVIEW -->
+  <section class="charts-overview">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Visualisations</span>
+        <h2>Explore the Charts</h2>
+        <p>Four interactive D3.js visualisations — each designed to reveal a different dimension of the data.</p>
+      </div>
+      <div class="chart-grid">
+        <a href="chart1.html" class="chart-card">
+          <div class="chart-card-preview preview-line"></div>
+          <div class="chart-card-info">
+            <h3>Enforcement Trends Over Time</h3>
+            <p>Multi-line chart showing all four offence types from 2008–2023. Filter by state or territory and toggle between absolute counts and indexed values.</p>
+            <span class="tag">Interactive</span><span class="tag">Multi-line</span><span class="tag">Year-on-Year</span>
+          </div>
+        </a>
+        <a href="chart2.html" class="chart-card">
+          <div class="chart-card-preview preview-bar"></div>
+          <div class="chart-card-info">
+            <h3>State &amp; Territory Comparison</h3>
+            <p>Grouped bar chart comparing enforcement counts across all 8 jurisdictions. Select any year from 2008–2023 and any offence type.</p>
+            <span class="tag">Interactive</span><span class="tag">Bar Chart</span><span class="tag">All States</span>
+          </div>
+        </a>
+        <a href="chart3.html" class="chart-card">
+          <div class="chart-card-preview preview-donut"></div>
+          <div class="chart-card-info">
+            <h3>Age Group Breakdown <span class="badge-new" style="font-size:0.65rem;margin-left:0.4rem;">2023</span></h3>
+            <p>New 2023 data — see which age groups commit which offences. Toggle between grouped and stacked views, and absolute vs percentage display.</p>
+            <span class="tag">2023 Data</span><span class="tag">Grouped Bar</span><span class="tag tag-new">New Dataset</span>
+          </div>
+        </a>
+        <a href="chart4.html" class="chart-card">
+          <div class="chart-card-preview preview-heat"></div>
+          <div class="chart-card-info">
+            <h3>Location Type Analysis <span class="badge-new" style="font-size:0.65rem;margin-left:0.4rem;">2023</span></h3>
+            <p>New 2023 data — metropolitan vs regional vs rural vs remote breakdowns. Includes a heatmap, grouped bars, and donut charts per offence.</p>
+            <span class="tag">2023 Data</span><span class="tag">Heatmap</span><span class="tag tag-new">New Dataset</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-cols">
+      <div>
+        <h4>COS30045 Data Visualisation</h4>
+        <p>Swinburne University of Technology<br>Semester 1, 2025</p>
+      </div>
+      <div>
+        <h4>Data Source</h4>
+        <p>Bureau of Infrastructure and Transport Research Economics (BITRE)<br>Road Safety Enforcement Data 2024</p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="chart1.html">Trends Over Time</a></li>
+          <li><a href="chart2.html">State Comparison</a></li>
+          <li><a href="chart3.html">Age Groups (2023)</a></li>
+          <li><a href="chart4.html">Location Analysis (2023)</a></li>
+          <li><a href="about.html">About This Project</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p>
+    </div>
+  </footer>
+
+  <script>
+    // Animate hero stats on intersection
+    function animateCount(el) {
+      const target = +el.dataset.target;
+      const duration = 1600;
+      const steps = duration / 16;
+      const step = target / steps;
+      let current = 0;
+      el.textContent = '0';
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current).toLocaleString();
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    }
+    const countObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          animateCount(e.target);
+          countObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.hero-stat-num').forEach(el => countObserver.observe(el));
+
+    // Hero canvas particle network
+    const canvas = document.getElementById('heroCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h, points;
+      function resize() {
+        w = canvas.width = canvas.offsetWidth;
+        h = canvas.height = canvas.offsetHeight;
+        initPoints();
+      }
+      function initPoints() {
+        points = Array.from({ length: 55 }, () => ({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 2 + 1
+        }));
+      }
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        // Draw connections
+        for (let i = 0; i < points.length; i++) {
+          for (let j = i + 1; j < points.length; j++) {
+            const a = points[i], b = points[j];
+            const d = Math.hypot(a.x - b.x, a.y - b.y);
+            if (d < 110) {
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = `rgba(42,159,214,${0.18 * (1 - d / 110)})`;
+              ctx.lineWidth = 0.7; ctx.stroke();
+            }
+          }
+        }
+        // Draw dots
+        points.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > w) p.vx *= -1;
+          if (p.y < 0 || p.y > h) p.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.55)';
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      resize(); draw();
+    }
+  </script>
+</body>
+</html>

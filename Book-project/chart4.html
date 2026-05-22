@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Type Analysis | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html" class="active">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        Location Type Analysis
+      </div>
+      <h1>Location Type Analysis <span class="badge-new">2023 New Data</span></h1>
+      <p>Location breakdowns are new in 2023. Compare how enforcement differs across metropolitan, regional, rural and remote areas for each offence type.</p>
+    </div>
+  </div>
+
+  <div class="chart-page">
+
+    <div class="insight-box">
+      <h4>🆕 New in 2023 Dataset</h4>
+      <p>Metropolitan areas account for the largest share of infringements by volume across all offence types — consistent with population density. However, the <em>composition</em> differs outside cities: drink driving and drug driving make up a higher proportion of total infringements in rural and remote areas, suggesting different enforcement priorities and driver behaviour patterns away from urban centres.</p>
+    </div>
+
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="scaleFilter">Heatmap Scale</label>
+        <select id="scaleFilter">
+          <option value="absolute">Absolute Count</option>
+          <option value="percent">% of Offence Total</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Enforcement Heatmap: Location × Offence Type</h2>
+        <p class="chart-subtitle">2023 data · Darker = higher value. Hover cells for exact figures.</p>
+      </div>
+      <div id="heatmap" role="img" aria-label="Heatmap of enforcement by location and offence type"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Infringements by Location Type</h2>
+        <p class="chart-subtitle" id="locSubtitle">Grouped bars — all offence types by location</p>
+      </div>
+      <div id="locBar" role="img" aria-label="Grouped bar chart by location type"></div>
+      <div class="legend" id="locLegend"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2 class="chart-title">Location Share per Offence Type</h2>
+        <p class="chart-subtitle">Proportional donut charts — one per offence category</p>
+      </div>
+      <div id="donuts" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:space-around;padding-top:1.2rem;align-items:center;"></div>
+      <div class="legend" id="donutLegend" style="margin-top:0.5rem;"></div>
+    </div>
+
+  </div>
+
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p></div>
+  </footer>
+
+<script>
+const LOCS     = ['Metropolitan','Regional','Rural','Remote'];
+const OFFENCES = ['Speeding','Mobile Phone','Drink Driving','Drug Driving'];
+const OFF_COLORS = {
+  'Speeding':      '#e63946',
+  'Mobile Phone':  '#2a9fd6',
+  'Drink Driving': '#e9c46a',
+  'Drug Driving':  '#2a9d8f'
+};
+const LOC_COLORS = ['#1a6faf','#2a9fd6','#a8dadc','#e9c46a'];
+const tooltip = d3.select('#tooltip');
+
+const _LOC_DATA = [{"location_type":"Metropolitan","offence_type":"Speeding","count":1048000},{"location_type":"Regional","offence_type":"Speeding","count":512000},{"location_type":"Rural","offence_type":"Speeding","count":314000},{"location_type":"Remote","offence_type":"Speeding","count":126000},{"location_type":"Metropolitan","offence_type":"Mobile Phone","count":589000},{"location_type":"Regional","offence_type":"Mobile Phone","count":198000},{"location_type":"Rural","offence_type":"Mobile Phone","count":89000},{"location_type":"Remote","offence_type":"Mobile Phone","count":28000},{"location_type":"Metropolitan","offence_type":"Drink Driving","count":42000},{"location_type":"Regional","offence_type":"Drink Driving","count":31000},{"location_type":"Rural","offence_type":"Drink Driving","count":26000},{"location_type":"Remote","offence_type":"Drink Driving","count":13000},{"location_type":"Metropolitan","offence_type":"Drug Driving","count":68000},{"location_type":"Regional","offence_type":"Drug Driving","count":54000},{"location_type":"Rural","offence_type":"Drug Driving","count":42000},{"location_type":"Remote","offence_type":"Drug Driving","count":18000}];
+Promise.resolve(_LOC_DATA.map(d => ({ location: d.location_type, offence: d.offence_type, count: +d.count }))).then(data => {
+  render(data);
+  d3.select('#scaleFilter').on('change', () => render(data));
+  window.addEventListener('resize', () => render(data));
+});
+
+function render(data) {
+  const mode = d3.select('#scaleFilter').node().value;
+  drawHeatmap(data, mode);
+  drawLocBar(data);
+  drawDonuts(data);
+  drawLegends();
+}
+
+function drawHeatmap(data, mode) {
+  const el = document.getElementById('heatmap');
+  d3.select(el).selectAll('*').remove();
+  const W = el.clientWidth || 800;
+  const M = { top: 14, right: 30, bottom: 90, left: 125 };
+  const w = W - M.left - M.right;
+  const h = 250 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const xScale = d3.scaleBand().domain(OFFENCES).range([0, w]).padding(0.06);
+  const yScale = d3.scaleBand().domain(LOCS).range([0, h]).padding(0.06);
+
+  const offTotals = {};
+  OFFENCES.forEach(o => {
+    offTotals[o] = d3.sum(data.filter(d => d.offence === o), d => d.count) || 1;
+  });
+
+  const vals = {};
+  data.forEach(d => {
+    vals[`${d.location}_${d.offence}`] =
+      mode === 'percent' ? (d.count / offTotals[d.offence]) * 100 : d.count;
+  });
+
+  const maxVal = d3.max(Object.values(vals));
+  const colorScale = d3.scaleSequential()
+    .domain([0, maxVal])
+    .interpolator(d3.interpolateBlues);
+
+  svg.append('g').attr('class', 'axis')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(xScale));
+  svg.append('g').attr('class', 'axis')
+    .call(d3.axisLeft(yScale));
+
+  LOCS.forEach(loc => {
+    OFFENCES.forEach(off => {
+      const v = vals[`${loc}_${off}`] || 0;
+      svg.append('rect')
+        .attr('x', xScale(off)).attr('y', yScale(loc))
+        .attr('width', xScale.bandwidth()).attr('height', yScale.bandwidth())
+        .attr('fill', colorScale(v)).attr('rx', 5)
+        .on('mousemove', event => {
+          tooltip.classed('visible', true)
+            .html(`<div class="tooltip-title">${loc} · ${off}</div><hr>${mode === 'percent'
+              ? v.toFixed(1) + '% of ' + off + ' total'
+              : v.toLocaleString() + ' infringements'}`)
+            .style('left', (event.clientX + 14) + 'px')
+            .style('top', (event.clientY - 50) + 'px');
+        })
+        .on('mouseleave', () => tooltip.classed('visible', false));
+
+      svg.append('text')
+        .attr('x', xScale(off) + xScale.bandwidth() / 2)
+        .attr('y', yScale(loc) + yScale.bandwidth() / 2 + 4)
+        .attr('text-anchor', 'middle').attr('font-size', 11)
+        .attr('font-family', 'var(--font-body)')
+        .attr('fill', v > maxVal * 0.58 ? '#fff' : 'var(--text)')
+        .attr('pointer-events', 'none')
+        .text(mode === 'percent' ? v.toFixed(0) + '%' : d3.format('.2s')(v));
+    });
+  });
+
+  // Legend bar
+  const defs = svg.append('defs');
+  const grad = defs.append('linearGradient').attr('id', 'heatGrad')
+    .attr('x1', '0%').attr('x2', '100%');
+  [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(t => {
+    grad.append('stop').attr('offset', t * 100 + '%')
+      .attr('stop-color', colorScale(t * maxVal));
+  });
+  const ly = h + 50;
+  svg.append('rect').attr('x', 0).attr('y', ly)
+    .attr('width', w).attr('height', 8).attr('rx', 4)
+    .attr('fill', 'url(#heatGrad)');
+  svg.append('text').attr('x', 0).attr('y', ly - 4)
+    .attr('font-size', 10).attr('font-family', 'var(--font-body)')
+    .attr('fill', 'var(--text-muted)').text('Low');
+  svg.append('text').attr('x', w).attr('y', ly - 4)
+    .attr('text-anchor', 'end').attr('font-size', 10)
+    .attr('font-family', 'var(--font-body)')
+    .attr('fill', 'var(--text-muted)').text('High');
+}
+
+function drawLocBar(data) {
+  const el = document.getElementById('locBar');
+  d3.select(el).selectAll('*').remove();
+  const W = el.clientWidth || 800;
+  const M = { top: 24, right: 20, bottom: 60, left: 80 };
+  const w = W - M.left - M.right;
+  const h = 310 - M.top - M.bottom;
+
+  const svg = d3.select(el).append('svg')
+    .attr('width', W).attr('height', h + M.top + M.bottom)
+    .append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  const x0 = d3.scaleBand().domain(LOCS).range([0, w]).padding(0.22);
+  const x1 = d3.scaleBand().domain(OFFENCES).range([0, x0.bandwidth()]).padding(0.07);
+  const maxVal = d3.max(data, d => d.count);
+  const yScale = d3.scaleLinear().domain([0, maxVal * 1.1]).range([h, 0]).nice();
+
+  svg.append('g').attr('class', 'grid')
+    .call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(5));
+  svg.append('g').attr('class', 'axis')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x0));
+  svg.append('g').attr('class', 'axis')
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d3.format('.2s')(d)));
+
+  svg.append('text')
+    .attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -66)
+    .attr('text-anchor', 'middle').attr('fill', 'var(--text-muted)')
+    .attr('font-size', 11).attr('font-family', 'var(--font-body)')
+    .text('Number of Infringements');
+
+  LOCS.forEach(loc => {
+    const g = svg.append('g').attr('transform', `translate(${x0(loc)},0)`);
+    OFFENCES.forEach(off => {
+      const row = data.find(r => r.location === loc && r.offence === off);
+      const v   = row ? row.count : 0;
+      g.append('rect')
+        .attr('x', x1(off)).attr('y', yScale(v))
+        .attr('width', x1.bandwidth()).attr('height', h - yScale(v))
+        .attr('fill', OFF_COLORS[off]).attr('rx', 2)
+        .on('mousemove', event => {
+          tooltip.classed('visible', true)
+            .html(`<div class="tooltip-title">${loc} · ${off}</div><hr>${v.toLocaleString()} infringements`)
+            .style('left', (event.clientX + 14) + 'px')
+            .style('top', (event.clientY - 50) + 'px');
+        })
+        .on('mouseleave', () => tooltip.classed('visible', false));
+    });
+  });
+}
+
+function drawDonuts(data) {
+  d3.select('#donuts').selectAll('*').remove();
+  const offTotals = {};
+  OFFENCES.forEach(o => {
+    offTotals[o] = d3.sum(data.filter(d => d.offence === o), d => d.count) || 1;
+  });
+
+  OFFENCES.forEach(off => {
+    const wrap = d3.select('#donuts').append('div')
+      .style('text-align', 'center').style('flex', '1').style('min-width', '150px');
+    wrap.append('div')
+      .style('font-size', '0.82rem').style('font-weight', '600')
+      .style('margin-bottom', '0.6rem').style('font-family', 'var(--font-body)')
+      .style('color', OFF_COLORS[off])
+      .text(off);
+
+    const size = 148, r = size / 2 - 8, ir = r - 30;
+    const svg = wrap.append('svg').attr('width', size).attr('height', size)
+      .append('g').attr('transform', `translate(${size / 2},${size / 2})`);
+
+    const offData = LOCS.map((loc, i) => {
+      const row = data.find(r => r.location === loc && r.offence === off);
+      return { loc, count: row ? row.count : 0, color: LOC_COLORS[i] };
+    });
+
+    const pie     = d3.pie().value(d => d.count).sort(null);
+    const arc     = d3.arc().innerRadius(ir).outerRadius(r);
+    const arcBig  = d3.arc().innerRadius(ir).outerRadius(r + 6);
+
+    svg.selectAll('path').data(pie(offData)).enter().append('path')
+      .attr('d', arc)
+      .attr('fill', d => d.data.color)
+      .attr('stroke', '#fff').attr('stroke-width', 2)
+      .style('cursor', 'pointer')
+      .on('mouseover', function(event, d) {
+        d3.select(this).attr('d', arcBig(d));
+        tooltip.classed('visible', true)
+          .html(`<div class="tooltip-title">${d.data.loc}</div><hr>${off}<br>${d.data.count.toLocaleString()} infringements<br><strong>${(d.data.count / offTotals[off] * 100).toFixed(1)}%</strong>`)
+          .style('left', (event.clientX + 14) + 'px')
+          .style('top', (event.clientY - 50) + 'px');
+      })
+      .on('mousemove', event => {
+        tooltip.style('left', (event.clientX + 14) + 'px')
+          .style('top', (event.clientY - 50) + 'px');
+      })
+      .on('mouseout', function(event, d) {
+        d3.select(this).attr('d', arc(d));
+        tooltip.classed('visible', false);
+      });
+
+    // Centre label
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '-0.3em')
+      .attr('font-size', 10).attr('fill', 'var(--text-muted)')
+      .attr('font-family', 'var(--font-body)').text('Metro');
+    const metroRow = data.find(r => r.location === 'Metropolitan' && r.offence === off);
+    const metroPct = metroRow ? (metroRow.count / offTotals[off] * 100).toFixed(0) : '0';
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '1.1em')
+      .attr('font-size', 14).attr('font-weight', '700').attr('fill', LOC_COLORS[0])
+      .attr('font-family', 'var(--font-body)').text(metroPct + '%');
+  });
+}
+
+function drawLegends() {
+  // Offence legend for bar
+  const locLeg = d3.select('#locLegend');
+  locLeg.selectAll('*').remove();
+  Object.entries(OFF_COLORS).forEach(([o, c]) => {
+    const item = locLeg.append('div').attr('class', 'legend-item');
+    item.append('div').attr('class', 'legend-dot').style('background', c);
+    item.append('span').text(o);
+  });
+
+  // Location legend for donuts
+  const donutLeg = d3.select('#donutLegend');
+  donutLeg.selectAll('*').remove();
+  LOCS.forEach((loc, i) => {
+    const item = donutLeg.append('div').attr('class', 'legend-item');
+    item.append('div').attr('class', 'legend-dot').style('background', LOC_COLORS[i]);
+    item.append('span').text(loc);
+  });
+}
+</script>
+</body>
+</html>
