@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Analysis | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="page-shell">
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html" class="active">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <h1>Location Type Analysis <span class="badge-new">2023 Data</span></h1>
+    </div>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group">
+      <label for="scaleFilter">Heatmap Scale</label>
+      <select id="scaleFilter">
+        <option value="absolute">Absolute Count</option>
+        <option value="percent">% of Offence Total</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dash-body">
+    <!-- Left: heatmap + grouped bars stacked -->
+    <div class="dash-col" style="flex:3;">
+      <div class="dash-panel" style="flex:2;">
+        <div class="panel-hd">
+          <div class="panel-title">Enforcement Heatmap: Location × Offence Type</div>
+          <div class="panel-sub">2023 · Darker = higher. Hover cells for exact figures.</div>
+        </div>
+        <div class="dash-chart" id="heatmap"></div>
+      </div>
+      <div class="dash-panel" style="flex:3;">
+        <div class="panel-hd">
+          <div class="panel-title">Infringements by Location Type</div>
+          <div class="panel-sub" id="locSubtitle">Grouped bars — all offence types</div>
+        </div>
+        <div class="dash-chart" id="locBar"></div>
+        <div class="legend" id="locLegend"></div>
+      </div>
+    </div>
+
+    <!-- Right: donuts -->
+    <div class="dash-panel" style="flex:2;">
+      <div class="panel-hd">
+        <div class="panel-title">Location Share per Offence</div>
+        <div class="panel-sub">Proportional breakdown by location type</div>
+      </div>
+      <div id="donuts" style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-around;gap:4px;overflow:hidden;"></div>
+      <div class="legend" id="donutLegend"></div>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+<script>
+const LOCS=['Metropolitan','Regional','Rural','Remote'];
+const OFFENCES=['Speeding','Mobile Phone','Drink Driving','Drug Driving'];
+const OFF_COLORS={'Speeding':'#EE3A40','Mobile Phone':'#0096D8','Drink Driving':'#F97316','Drug Driving':'#00A04A'};
+const LOC_COLORS=['#006FBD','#0096D8','#7BC4E2','#F97316'];
+const tooltip=d3.select('#tooltip');
+const RAW=[
+  {loc:"Metropolitan",o:"Speeding",c:1048000},{loc:"Regional",o:"Speeding",c:512000},{loc:"Rural",o:"Speeding",c:314000},{loc:"Remote",o:"Speeding",c:126000},
+  {loc:"Metropolitan",o:"Mobile Phone",c:589000},{loc:"Regional",o:"Mobile Phone",c:198000},{loc:"Rural",o:"Mobile Phone",c:89000},{loc:"Remote",o:"Mobile Phone",c:28000},
+  {loc:"Metropolitan",o:"Drink Driving",c:42000},{loc:"Regional",o:"Drink Driving",c:31000},{loc:"Rural",o:"Drink Driving",c:26000},{loc:"Remote",o:"Drink Driving",c:13000},
+  {loc:"Metropolitan",o:"Drug Driving",c:68000},{loc:"Regional",o:"Drug Driving",c:54000},{loc:"Rural",o:"Drug Driving",c:42000},{loc:"Remote",o:"Drug Driving",c:18000}
+];
+const data=RAW.map(d=>({location:d.loc,offence:d.o,count:+d.c}));
+setTimeout(()=>render(data),0);
+d3.select('#scaleFilter').on('change',()=>render(data));
+window.addEventListener('resize',()=>render(data));
+
+function render(data){
+  const mode=d3.select('#scaleFilter').node().value;
+  drawHeatmap(data,mode);
+  drawLocBar(data);
+  drawDonuts(data);
+  drawLegends();
+}
+
+function drawHeatmap(data,mode){
+  const el=document.getElementById('heatmap');
+  d3.select(el).selectAll('*').remove();
+  const W=el.clientWidth||400, H=el.clientHeight||100;
+  const M={top:6,right:16,bottom:52,left:110};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H).style('display','block').append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const xScale=d3.scaleBand().domain(OFFENCES).range([0,w]).padding(0.06);
+  const yScale=d3.scaleBand().domain(LOCS).range([0,h]).padding(0.06);
+  const offTotals={};
+  OFFENCES.forEach(o=>offTotals[o]=d3.sum(data.filter(d=>d.offence===o),d=>d.count)||1);
+  const vals={};
+  data.forEach(d=>{vals[`${d.location}_${d.offence}`]=mode==='percent'?(d.count/offTotals[d.offence])*100:d.count;});
+  const maxVal=d3.max(Object.values(vals));
+  // Dark-friendly color scale: navy → gold
+  const colorScale=d3.scaleSequential().domain([0,maxVal]).interpolator(d3.interpolateRgb('#0c1e38','#38BDF8'));
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale));
+  svg.append('g').attr('class','axis').call(d3.axisLeft(yScale));
+  LOCS.forEach((loc,li)=>{
+    OFFENCES.forEach(off=>{
+      const v=vals[`${loc}_${off}`]||0;
+      svg.append('rect').attr('x',xScale(off)).attr('y',yScale(loc)).attr('width',xScale.bandwidth()).attr('height',yScale.bandwidth()).attr('rx',4).attr('fill','rgba(0,0,0,0)')
+        .on('mousemove',event=>{tooltip.classed('visible',true).html(`<div class="tooltip-title">${loc} · ${off}</div><hr>${mode==='percent'?v.toFixed(1)+'% of '+off+' total':v.toLocaleString()+' infringements'}`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+        .on('mouseleave',()=>tooltip.classed('visible',false))
+        .transition().duration(450).delay(li*60).attr('fill',colorScale(v));
+      svg.append('text').attr('x',xScale(off)+xScale.bandwidth()/2).attr('y',yScale(loc)+yScale.bandwidth()/2+4).attr('text-anchor','middle').attr('font-size',10).attr('font-family','var(--font-body)').attr('pointer-events','none').attr('fill',v>maxVal*0.5?'rgba(255,255,255,0.9)':'rgba(200,220,240,0.7)').text(mode==='percent'?v.toFixed(0)+'%':d3.format('.2s')(v));
+    });
+  });
+  // Legend bar
+  const defs=svg.append('defs');
+  const grad=defs.append('linearGradient').attr('id','heatGrad').attr('x1','0%').attr('x2','100%');
+  [0,.2,.4,.6,.8,1].forEach(t=>grad.append('stop').attr('offset',t*100+'%').attr('stop-color',colorScale(t*maxVal)));
+  const ly=h+28;
+  svg.append('rect').attr('x',0).attr('y',ly).attr('width',w).attr('height',6).attr('rx',3).attr('fill','url(#heatGrad)');
+  svg.append('text').attr('x',0).attr('y',ly-4).attr('font-size',8.5).attr('font-family','var(--font-body)').attr('fill','rgba(170,195,220,0.55)').text('Low');
+  svg.append('text').attr('x',w).attr('y',ly-4).attr('text-anchor','end').attr('font-size',8.5).attr('font-family','var(--font-body)').attr('fill','rgba(170,195,220,0.55)').text('High');
+}
+
+function drawLocBar(data){
+  const el=document.getElementById('locBar');
+  d3.select(el).selectAll('*').remove();
+  const W=el.clientWidth||400, H=el.clientHeight||160;
+  const M={top:8,right:14,bottom:40,left:68};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H).style('display','block').append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const x0=d3.scaleBand().domain(LOCS).range([0,w]).padding(0.22);
+  const x1=d3.scaleBand().domain(OFFENCES).range([0,x0.bandwidth()]).padding(0.07);
+  const maxVal=d3.max(data,d=>d.count);
+  const yScale=d3.scaleLinear().domain([0,maxVal*1.1]).range([h,0]).nice();
+  svg.append('g').attr('class','grid').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(4));
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(x0));
+  svg.append('g').attr('class','axis').call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>d3.format('.2s')(d)));
+  let delay=0;
+  LOCS.forEach(loc=>{
+    const g=svg.append('g').attr('transform',`translate(${x0(loc)},0)`);
+    OFFENCES.forEach(off=>{
+      const row=data.find(r=>r.location===loc&&r.offence===off);
+      const v=row?row.count:0;
+      g.append('rect').attr('x',x1(off)).attr('width',x1.bandwidth()).attr('y',h).attr('height',0).attr('fill',OFF_COLORS[off]).attr('rx',2)
+        .on('mousemove',event=>{tooltip.classed('visible',true).html(`<div class="tooltip-title">${loc} · ${off}</div><hr>${v.toLocaleString()} infringements`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+        .on('mouseleave',()=>tooltip.classed('visible',false))
+        .transition().duration(480).delay(delay).attr('y',yScale(v)).attr('height',h-yScale(v));
+      delay+=16;
+    });
+  });
+}
+
+function drawDonuts(data){
+  const container=document.getElementById('donuts');
+  d3.select('#donuts').selectAll('*').remove();
+  const offTotals={};
+  OFFENCES.forEach(o=>offTotals[o]=d3.sum(data.filter(d=>d.offence===o),d=>d.count)||1);
+  const containerH=container.clientHeight||360;
+  const size=Math.max(80,Math.min(120,(containerH/4)-8));
+  OFFENCES.forEach((off,oi)=>{
+    const row=d3.select('#donuts').append('div').style('display','flex').style('align-items','center').style('gap','10px').style('flex','1').style('min-height','0').style('padding','0 6px');
+    row.append('div').style('font-size','0.72rem').style('font-weight','700').style('color',OFF_COLORS[off]).style('font-family','var(--font-body)').style('width','82px').style('flex-shrink','0').style('line-height','1.3').text(off);
+    const r=size/2-5, ir=r-20;
+    const svgEl=row.append('svg').attr('width',size).attr('height',size).style('flex-shrink','0').append('g').attr('transform',`translate(${size/2},${size/2})`);
+    const offData=LOCS.map((loc,i)=>{const rd=data.find(r=>r.location===loc&&r.offence===off);return{loc,count:rd?rd.count:0,color:LOC_COLORS[i]};});
+    const pie=d3.pie().value(d=>d.count).sort(null);
+    const arc=d3.arc().innerRadius(ir).outerRadius(r);
+    const arcBig=d3.arc().innerRadius(ir).outerRadius(r+5);
+    svgEl.selectAll('path').data(pie(offData)).enter().append('path').attr('fill',d=>d.data.color).attr('stroke','rgba(7,16,30,0.8)').attr('stroke-width',1.5).style('cursor','pointer').attr('d',d=>arc(d)).style('opacity',0)
+      .on('mouseover',function(event,d){d3.select(this).attr('d',arcBig(d));tooltip.classed('visible',true).html(`<div class="tooltip-title">${d.data.loc}</div><hr>${off}<br>${d.data.count.toLocaleString()} · <strong>${(d.data.count/offTotals[off]*100).toFixed(1)}%</strong>`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+      .on('mousemove',event=>{tooltip.style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+      .on('mouseout',function(event,d){d3.select(this).attr('d',arc(d));tooltip.classed('visible',false);})
+      .transition().duration(500).delay(oi*100).style('opacity',1);
+    svgEl.append('text').attr('text-anchor','middle').attr('dy','-0.1em').attr('font-size',9).attr('font-family','var(--font-body)').attr('fill','rgba(170,195,220,0.7)').text(d3.format('.2s')(d3.sum(offData,d=>d.count)));
+    svgEl.append('text').attr('text-anchor','middle').attr('dy','1em').attr('font-size',7.5).attr('font-family','var(--font-body)').attr('fill','rgba(170,195,220,0.4)').attr('letter-spacing','0.04em').text('TOTAL');
+    // pct bars next to donut
+    const barsDiv=row.append('div').style('flex','1').style('display','flex').style('flex-direction','column').style('gap','3px').style('min-width','0');
+    offData.forEach(d=>{
+      const pct=(d.count/offTotals[off])*100;
+      const barRow=barsDiv.append('div').style('display','flex').style('align-items','center').style('gap','5px');
+      barRow.append('div').style('font-size','0.62rem').style('color','rgba(170,195,220,0.5)').style('width','68px').style('flex-shrink','0').style('font-family','var(--font-body)').text(d.loc);
+      const track=barRow.append('div').style('flex','1').style('background','rgba(255,255,255,0.06)').style('border-radius','3px').style('height','6px').style('overflow','hidden');
+      track.append('div').style('height','100%').style('border-radius','3px').style('background',d.color).style('width','0').style('transition','width 0.5s ease').node();
+      setTimeout(()=>{ track.select('div').style('width',pct+'%'); }, 100+oi*50);
+      barRow.append('div').style('font-size','0.62rem').style('color','rgba(170,195,220,0.65)').style('font-family','var(--font-body)').style('width','30px').style('text-align','right').text(pct.toFixed(0)+'%');
+    });
+  });
+}
+
+function drawLegends(){
+  const locLeg=d3.select('#locLegend');locLeg.selectAll('*').remove();
+  Object.entries(OFF_COLORS).forEach(([off,col])=>{const item=locLeg.append('div').attr('class','legend-item');item.append('div').attr('class','legend-dot').style('background',col);item.append('span').text(off);});
+  const dLeg=d3.select('#donutLegend');dLeg.selectAll('*').remove();
+  LOCS.forEach((loc,i)=>{const item=dLeg.append('div').attr('class','legend-item');item.append('div').attr('class','legend-dot').style('background',LOC_COLORS[i]);item.append('span').text(loc);});
+}
+</script>
+</body>
+</html>

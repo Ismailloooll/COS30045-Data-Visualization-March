@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Australian Road Safety Enforcement | BITRE · COS30045</title>
+  <meta name="description" content="Interactive visualisation of BITRE Australian road safety enforcement data 2008–2023.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-bg-grid" aria-hidden="true"></div>
+    <div class="hero-bg-glow" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">BITRE · 2008–2023 · Australia</div>
+      <h1 class="hero-title">Road Safety<br><em>Enforcement</em><br>in Australia</h1>
+      <p class="hero-sub">Explore 15 years of police enforcement data — speeding, mobile phones, drink driving and drug driving — across all 8 states and territories.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="1884200">0</span>
+          <span class="hero-stat-label">2023 Infringements</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="15">0</span>
+          <span class="hero-stat-label">Years of Data</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="8">0</span>
+          <span class="hero-stat-label">Jurisdictions</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-target="4">0</span>
+          <span class="hero-stat-label">Offence Types</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="chart1.html" class="hero-cta">Explore the Data →</a>
+        <a href="about.html" class="hero-cta-ghost">About the Project</a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true"><canvas id="heroCanvas"></canvas></div>
+  </header>
+
+  <div class="data-strip">
+    <div class="data-strip-inner">
+      <div class="data-strip-item"><span class="data-strip-num">3,760%</span><span class="data-strip-label">Drug Driving Rise 2008–2023</span></div>
+      <div class="data-strip-item"><span class="data-strip-num">2,050%</span><span class="data-strip-label">Mobile Phone Fine Increase</span></div>
+      <div class="data-strip-item"><span class="data-strip-num">60%+</span><span class="data-strip-label">Offences by 18–39 Age Group</span></div>
+      <div class="data-strip-item"><span class="data-strip-num">56%</span><span class="data-strip-label">Speeding Fines — Metro Areas</span></div>
+    </div>
+  </div>
+
+  <section class="story">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Key Findings</span>
+        <h2>What does the data tell us?</h2>
+        <p>Three key findings from 15 years of Australian road safety enforcement data.</p>
+      </div>
+      <div class="story-cards">
+        <a href="chart1.html" class="story-card" style="border-top-color:#EE3A40">
+          <div class="story-card-num">01</div>
+          <div class="story-card-icon">📱</div>
+          <h3>Mobile Phone Fines Have Surged</h3>
+          <p>Mobile phone infringements rose over <strong>2,000%</strong> between 2008 and 2023. Drug driving detections rose even more steeply — nearly 3,760%.</p>
+          <span class="story-card-link">See trend chart</span>
+        </a>
+        <a href="chart3.html" class="story-card" style="border-top-color:#00A04A">
+          <div class="story-card-num">02</div>
+          <div class="story-card-icon">👤</div>
+          <h3>18–39 Year Olds Dominate Offences</h3>
+          <p>The 2023 age-group data shows drivers aged 18–39 account for over <strong>60%</strong> of drug-driving and mobile phone offences nationally.</p>
+          <span class="story-card-link">See age breakdown</span>
+        </a>
+        <a href="chart4.html" class="story-card" style="border-top-color:#F97316">
+          <div class="story-card-num">03</div>
+          <div class="story-card-icon">📍</div>
+          <h3>Metro Areas Lead Enforcement</h3>
+          <p>Metropolitan areas account for the majority of all infringement types — but rural and remote areas show proportionally higher drink and drug driving rates.</p>
+          <span class="story-card-link">See location data</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="charts-overview">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Visualisations</span>
+        <h2>Explore the Charts</h2>
+        <p>Four interactive D3.js visualisations — each designed to reveal a different dimension of the data.</p>
+      </div>
+      <div class="chart-grid">
+        <a href="chart1.html" class="chart-card">
+          <div class="chart-card-preview">
+            <svg viewBox="0 0 400 165" style="width:100%;height:100%;display:block">
+              <path d="M20,148 C70,140 110,128 160,116 C210,104 250,92 300,80 C340,70 370,64 400,60" fill="none" stroke="#EE3A40" stroke-width="2.5" opacity="0.9"/>
+              <path d="M20,152 C70,148 110,142 160,134 C210,126 250,116 300,100 C340,88 370,78 400,70" fill="none" stroke="#F97316" stroke-width="2.5" opacity="0.9"/>
+              <path d="M20,150 C70,144 110,132 160,112 C210,92 250,72 300,50 C340,34 370,22 400,14" fill="none" stroke="#0096D8" stroke-width="2.5" opacity="0.9"/>
+              <path d="M20,152 C70,148 110,140 160,124 C210,108 250,88 300,60 C340,38 370,22 400,12" fill="none" stroke="#00A04A" stroke-width="2.5" opacity="0.9"/>
+              <line x1="370" y1="0" x2="370" y2="165" stroke="#0096D8" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="chart-card-info">
+            <h3>Enforcement Trends Over Time</h3>
+            <p>Multi-line chart from 2008–2023. Filter by state, toggle between absolute counts and index, and explore year-on-year change bars.</p>
+            <span class="tag">Interactive</span><span class="tag">Multi-line</span><span class="tag">Year-on-Year</span>
+          </div>
+        </a>
+        <a href="chart2.html" class="chart-card">
+          <div class="chart-card-preview">
+            <svg viewBox="0 0 400 165" style="width:100%;height:100%;display:block">
+              <rect x="18"  y="50"  width="22" height="115" rx="3" fill="#EE3A40" opacity="0.85"/>
+              <rect x="44"  y="65"  width="22" height="100" rx="3" fill="#006FBD" opacity="0.85"/>
+              <rect x="88"  y="70"  width="22" height="95"  rx="3" fill="#0096D8" opacity="0.85"/>
+              <rect x="114" y="85"  width="22" height="80"  rx="3" fill="#F97316" opacity="0.85"/>
+              <rect x="158" y="90"  width="22" height="75"  rx="3" fill="#00A04A" opacity="0.85"/>
+              <rect x="184" y="102" width="22" height="63"  rx="3" fill="#C87833" opacity="0.85"/>
+              <rect x="228" y="110" width="22" height="55"  rx="3" fill="#7BC4E2" opacity="0.85"/>
+              <rect x="254" y="120" width="22" height="45"  rx="3" fill="#6d6875" opacity="0.85"/>
+              <rect x="300" y="60"  width="22" height="105" rx="3" fill="#EE3A40" opacity="0.85"/>
+              <rect x="326" y="78"  width="22" height="87"  rx="3" fill="#006FBD" opacity="0.85"/>
+              <rect x="352" y="92"  width="22" height="73"  rx="3" fill="#0096D8" opacity="0.85"/>
+            </svg>
+          </div>
+          <div class="chart-card-info">
+            <h3>State &amp; Territory Comparison</h3>
+            <p>Animated bar chart comparing all 8 jurisdictions. Click bars to highlight, sort by count, and see each state's national share.</p>
+            <span class="tag">Interactive</span><span class="tag">Animated Sort</span><span class="tag">All States</span>
+          </div>
+        </a>
+        <a href="chart3.html" class="chart-card">
+          <div class="chart-card-preview">
+            <svg viewBox="0 0 400 165" style="width:100%;height:100%;display:block">
+              <rect x="20" y="65"  width="14" height="100" rx="2" fill="#7BC4E2" opacity="0.9"/>
+              <rect x="36" y="28"  width="14" height="137" rx="2" fill="#0096D8" opacity="0.9"/>
+              <rect x="52" y="10"  width="14" height="155" rx="2" fill="#006FBD" opacity="0.9"/>
+              <rect x="68" y="20"  width="14" height="145" rx="2" fill="#EE3A40" opacity="0.9"/>
+              <rect x="84" y="72"  width="14" height="93"  rx="2" fill="#F97316" opacity="0.9"/>
+              <rect x="120" y="80" width="14" height="85"  rx="2" fill="#7BC4E2" opacity="0.9"/>
+              <rect x="136" y="52" width="14" height="113" rx="2" fill="#0096D8" opacity="0.9"/>
+              <rect x="152" y="35" width="14" height="130" rx="2" fill="#006FBD" opacity="0.9"/>
+              <rect x="168" y="48" width="14" height="117" rx="2" fill="#EE3A40" opacity="0.9"/>
+              <rect x="184" y="88" width="14" height="77"  rx="2" fill="#F97316" opacity="0.9"/>
+              <circle cx="290" cy="82" r="50" fill="none" stroke="#1e3354" stroke-width="22"/>
+              <circle cx="290" cy="82" r="50" fill="none" stroke="#0096D8" stroke-width="22" stroke-dasharray="95 314" transform="rotate(-90 290 82)" opacity="0.9"/>
+              <circle cx="290" cy="82" r="50" fill="none" stroke="#EE3A40" stroke-width="22" stroke-dasharray="62 314" stroke-dashoffset="-95" transform="rotate(-90 290 82)" opacity="0.9"/>
+              <circle cx="290" cy="82" r="50" fill="none" stroke="#F97316" stroke-width="22" stroke-dasharray="42 314" stroke-dashoffset="-157" transform="rotate(-90 290 82)" opacity="0.9"/>
+              <circle cx="290" cy="82" r="50" fill="none" stroke="#00A04A" stroke-width="22" stroke-dasharray="115 314" stroke-dashoffset="-199" transform="rotate(-90 290 82)" opacity="0.9"/>
+            </svg>
+          </div>
+          <div class="chart-card-info">
+            <h3>Age Group Breakdown <span class="badge-new" style="font-size:0.65rem;margin-left:0.4rem;">2023</span></h3>
+            <p>Toggle between grouped and stacked views. See which age cohorts are most over-represented for each offence category.</p>
+            <span class="tag">2023 Data</span><span class="tag">Grouped Bar</span><span class="tag tag-new">New Dataset</span>
+          </div>
+        </a>
+        <a href="chart4.html" class="chart-card">
+          <div class="chart-card-preview">
+            <svg viewBox="0 0 400 165" style="width:100%;height:100%;display:block">
+              <rect x="22"  y="12"  width="82" height="32" rx="4" fill="#08306b" opacity="0.95"/>
+              <rect x="112" y="12"  width="82" height="32" rx="4" fill="#2171b5" opacity="0.95"/>
+              <rect x="202" y="12"  width="82" height="32" rx="4" fill="#4292c6" opacity="0.95"/>
+              <rect x="292" y="12"  width="90" height="32" rx="4" fill="#9ecae1" opacity="0.95"/>
+              <rect x="22"  y="52"  width="82" height="32" rx="4" fill="#2171b5" opacity="0.95"/>
+              <rect x="112" y="52"  width="82" height="32" rx="4" fill="#6baed6" opacity="0.95"/>
+              <rect x="202" y="52"  width="82" height="32" rx="4" fill="#9ecae1" opacity="0.95"/>
+              <rect x="292" y="52"  width="90" height="32" rx="4" fill="#deebf7" opacity="0.95"/>
+              <rect x="22"  y="92"  width="82" height="32" rx="4" fill="#6baed6" opacity="0.95"/>
+              <rect x="112" y="92"  width="82" height="32" rx="4" fill="#9ecae1" opacity="0.95"/>
+              <rect x="202" y="92"  width="82" height="32" rx="4" fill="#c6dbef" opacity="0.95"/>
+              <rect x="292" y="92"  width="90" height="32" rx="4" fill="#f7fbff" opacity="0.95"/>
+              <rect x="22"  y="132" width="82" height="25" rx="4" fill="#9ecae1" opacity="0.95"/>
+              <rect x="112" y="132" width="82" height="25" rx="4" fill="#c6dbef" opacity="0.95"/>
+              <rect x="202" y="132" width="82" height="25" rx="4" fill="#deebf7" opacity="0.95"/>
+              <rect x="292" y="132" width="90" height="25" rx="4" fill="#f7fbff" opacity="0.95"/>
+            </svg>
+          </div>
+          <div class="chart-card-info">
+            <h3>Location Type Analysis <span class="badge-new" style="font-size:0.65rem;margin-left:0.4rem;">2023</span></h3>
+            <p>Metro vs regional vs rural vs remote breakdowns via heatmap, grouped bars, and animated donut charts per offence type.</p>
+            <span class="tag">2023 Data</span><span class="tag">Heatmap</span><span class="tag tag-new">New Dataset</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-cols">
+      <div>
+        <h4>COS30045 Data Visualisation</h4>
+        <p>Swinburne University of Technology<br>Semester 1, 2025</p>
+      </div>
+      <div>
+        <h4>Data Source</h4>
+        <p>Bureau of Infrastructure and Transport Research Economics (BITRE)<br>Road Safety Enforcement Data 2024</p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="chart1.html">Trends Over Time</a></li>
+          <li><a href="chart2.html">State Comparison</a></li>
+          <li><a href="chart3.html">Age Groups (2023)</a></li>
+          <li><a href="chart4.html">Location Analysis (2023)</a></li>
+          <li><a href="about.html">About This Project</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p>
+    </div>
+  </footer>
+
+<script>
+  function animateCount(el) {
+    const target = +el.dataset.target;
+    const dur = 1800, steps = dur / 16, step = target / steps;
+    let cur = 0;
+    const t = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = Math.floor(cur).toLocaleString();
+      if (cur >= target) clearInterval(t);
+    }, 16);
+  }
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCount(e.target); obs.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.hero-stat-num').forEach(el => obs.observe(el));
+
+  const canvas = document.getElementById('heroCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let w, h, pts;
+    function resize() {
+      w = canvas.width = canvas.offsetWidth;
+      h = canvas.height = canvas.offsetHeight;
+      pts = Array.from({ length: 70 }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.42, vy: (Math.random() - 0.5) * 0.42,
+        r: Math.random() * 2.2 + 0.7,
+        col: Math.random() > 0.55 ? [42,159,214] : [255,255,255]
+      }));
+    }
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < 115) {
+            ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(42,159,214,${0.15 * (1 - d/115)})`; ctx.lineWidth = 0.8; ctx.stroke();
+          }
+        }
+      }
+      pts.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.col[0]===255 ? 0.45 : 0.65})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize);
+    resize(); draw();
+  }
+</script>
+</body>
+</html>

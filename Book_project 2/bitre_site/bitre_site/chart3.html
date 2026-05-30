@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Group Breakdown | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="page-shell">
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html" class="active">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <h1>Age Group Breakdown <span class="badge-new">2023 Data</span></h1>
+    </div>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group">
+      <label for="modeFilter">Display Mode</label>
+      <select id="modeFilter">
+        <option value="absolute">Absolute Count</option>
+        <option value="percent">% of Offence Total</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="viewFilter">Chart Type</label>
+      <select id="viewFilter">
+        <option value="grouped">Grouped by Offence</option>
+        <option value="stacked">Stacked by Age Group</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dash-body" style="flex-direction:column;">
+    <div class="dash-panel" style="flex:3;">
+      <div class="panel-hd">
+        <div class="panel-title">Offences by Age Group, 2023</div>
+        <div class="panel-sub" id="ageSubtitle">Absolute counts — all offence types</div>
+      </div>
+      <div class="dash-chart" id="ageChart"></div>
+      <div class="legend" id="ageLegend"></div>
+    </div>
+    <div class="dash-panel" style="flex:2;">
+      <div class="panel-hd">
+        <div class="panel-title">Age Profile per Offence (100% Stacked)</div>
+        <div class="panel-sub">Proportional share of each age group within each offence category</div>
+      </div>
+      <div class="dash-chart" id="stackedChart"></div>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+<script>
+const AGE_GROUPS=['17 and under','18-25','26-39','40-59','60 and over'];
+const AGE_COLORS=['#7BC4E2','#0096D8','#006FBD','#EE3A40','#F97316'];
+const OFFENCES=['Speeding','Mobile Phone','Drink Driving','Drug Driving'];
+const tooltip=d3.select('#tooltip');
+const RAW=[
+  {age:"17 and under",offence:"Speeding",c:28400},{age:"18-25",offence:"Speeding",c:312000},{age:"26-39",offence:"Speeding",c:498000},{age:"40-59",offence:"Speeding",c:571000},{age:"60 and over",offence:"Speeding",c:264000},
+  {age:"17 and under",offence:"Mobile Phone",c:9200},{age:"18-25",offence:"Mobile Phone",c:198000},{age:"26-39",offence:"Mobile Phone",c:289000},{age:"40-59",offence:"Mobile Phone",c:221000},{age:"60 and over",offence:"Mobile Phone",c:62000},
+  {age:"17 and under",offence:"Drink Driving",c:4800},{age:"18-25",offence:"Drink Driving",c:31000},{age:"26-39",offence:"Drink Driving",c:28500},{age:"40-59",offence:"Drink Driving",c:19800},{age:"60 and over",offence:"Drink Driving",c:8100},
+  {age:"17 and under",offence:"Drug Driving",c:2100},{age:"18-25",offence:"Drug Driving",c:38200},{age:"26-39",offence:"Drug Driving",c:51400},{age:"40-59",offence:"Drug Driving",c:29600},{age:"60 and over",offence:"Drug Driving",c:7200}
+];
+const data=RAW.map(d=>({age:d.age,offence:d.offence,count:+d.c}));
+setTimeout(()=>render(data),0);
+d3.select('#modeFilter').on('change',()=>render(data));
+d3.select('#viewFilter').on('change',()=>render(data));
+window.addEventListener('resize',()=>render(data));
+
+function render(data){
+  const mode=d3.select('#modeFilter').node().value;
+  const view=d3.select('#viewFilter').node().value;
+  d3.select('#ageSubtitle').text(mode==='percent'?'% of offence total':'Absolute counts — all offence types');
+  drawAgeChart(data,mode,view);
+  drawStacked100(data);
+  drawAgeLegend();
+}
+
+function drawAgeChart(data,mode,view){
+  const el=document.getElementById('ageChart');
+  d3.select(el).selectAll('*').remove();
+  const W=el.clientWidth||700, H=el.clientHeight||200;
+  const M={top:8,right:14,bottom:48,left:68};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H).style('display','block').append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const totals={};
+  OFFENCES.forEach(o=>totals[o]=d3.sum(data.filter(d=>d.offence===o),d=>d.count)||1);
+  if(view==='grouped'){
+    const x0=d3.scaleBand().domain(OFFENCES).range([0,w]).padding(0.22);
+    const x1=d3.scaleBand().domain(AGE_GROUPS).range([0,x0.bandwidth()]).padding(0.05);
+    let maxVal=0;
+    data.forEach(d=>{const v=mode==='percent'?(d.count/totals[d.offence])*100:d.count;if(v>maxVal)maxVal=v;});
+    const yScale=d3.scaleLinear().domain([0,maxVal*1.1]).range([h,0]).nice();
+    svg.append('g').attr('class','grid').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(4));
+    svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(x0)).selectAll('text').attr('transform','rotate(-10)').attr('text-anchor','end');
+    svg.append('g').attr('class','axis').call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>mode==='percent'?d+'%':d3.format('.2s')(d)));
+    let delay=0;
+    OFFENCES.forEach(o=>{
+      const g=svg.append('g').attr('transform',`translate(${x0(o)},0)`);
+      AGE_GROUPS.forEach((age,ai)=>{
+        const row=data.find(r=>r.offence===o&&r.age===age);
+        const v=row?(mode==='percent'?(row.count/totals[o])*100:row.count):0;
+        g.append('rect').attr('x',x1(age)).attr('width',x1.bandwidth()).attr('y',h).attr('height',0).attr('fill',AGE_COLORS[ai]).attr('rx',2)
+          .on('mousemove',event=>{tooltip.classed('visible',true).html(`<div class="tooltip-title">${age}</div><hr>${o}<br><strong>${mode==='percent'?v.toFixed(1)+'%':v.toLocaleString()}</strong>`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+          .on('mouseleave',()=>tooltip.classed('visible',false))
+          .transition().duration(500).delay(delay).attr('y',yScale(v)).attr('height',h-yScale(v));
+        delay+=16;
+      });
+    });
+  } else {
+    const xScale=d3.scaleBand().domain(OFFENCES).range([0,w]).padding(0.22);
+    const stack=d3.stack().keys(AGE_GROUPS).value((d,k)=>{const row=data.find(r=>r.offence===d.offence&&r.age===k);const v=row?row.count:0;return mode==='percent'?(v/totals[d.offence])*100:v;});
+    const stackData=stack(OFFENCES.map(o=>({offence:o})));
+    const maxVal=mode==='percent'?100:d3.max(stackData[stackData.length-1],d=>d[1]);
+    const yScale=d3.scaleLinear().domain([0,maxVal*1.04]).range([h,0]).nice();
+    svg.append('g').attr('class','grid').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(4));
+    svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale)).selectAll('text').attr('transform','rotate(-10)').attr('text-anchor','end');
+    svg.append('g').attr('class','axis').call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>mode==='percent'?d+'%':d3.format('.2s')(d)));
+    stackData.forEach((layer,li)=>{
+      svg.selectAll(`.sl${li}`).data(layer).enter().append('rect').attr('class',`sl${li}`)
+        .attr('x',d=>xScale(d.data.offence)).attr('width',xScale.bandwidth()).attr('y',h).attr('height',0)
+        .attr('fill',AGE_COLORS[li]).attr('rx',li===0?2:0)
+        .on('mousemove',(event,d)=>{const v=d[1]-d[0];tooltip.classed('visible',true).html(`<div class="tooltip-title">${AGE_GROUPS[li]}</div><hr>${d.data.offence}<br><strong>${mode==='percent'?v.toFixed(1)+'%':v.toLocaleString()}</strong>`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+        .on('mouseleave',()=>tooltip.classed('visible',false))
+        .transition().duration(500).delay(li*50).attr('y',d=>yScale(d[1])).attr('height',d=>Math.max(0,yScale(d[0])-yScale(d[1])));
+    });
+  }
+}
+
+function drawStacked100(data){
+  const el=document.getElementById('stackedChart');
+  d3.select(el).selectAll('*').remove();
+  const W=el.clientWidth||700, H=el.clientHeight||140;
+  const M={top:6,right:14,bottom:26,left:100};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H).style('display','block').append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const totals={};
+  OFFENCES.forEach(o=>totals[o]=d3.sum(data.filter(d=>d.offence===o),d=>d.count)||1);
+  const xScale=d3.scaleLinear().domain([0,100]).range([0,w]);
+  const yScale=d3.scaleBand().domain(OFFENCES).range([0,h]).padding(0.28);
+  svg.append('g').attr('class','axis').call(d3.axisLeft(yScale));
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale).tickFormat(d=>d+'%').ticks(4));
+  OFFENCES.forEach(o=>{
+    let cumX=0;
+    AGE_GROUPS.forEach((age,ai)=>{
+      const row=data.find(r=>r.offence===o&&r.age===age);
+      const pct=row?(row.count/totals[o])*100:0;
+      svg.append('rect').attr('y',yScale(o)).attr('height',yScale.bandwidth()).attr('fill',AGE_COLORS[ai]).attr('x',xScale(cumX)).attr('width',0)
+        .on('mousemove',event=>{tooltip.classed('visible',true).html(`<div class="tooltip-title">${age}</div><hr>${o}: <strong>${pct.toFixed(1)}%</strong>`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+        .on('mouseleave',()=>tooltip.classed('visible',false))
+        .transition().duration(550).delay(ai*35).attr('width',xScale(pct));
+      if(pct>5) svg.append('text').attr('x',xScale(cumX+pct/2)).attr('y',yScale(o)+yScale.bandwidth()/2+4).attr('text-anchor','middle').attr('font-size',9).attr('fill','rgba(255,255,255,0.88)').attr('pointer-events','none').attr('font-family','var(--font-body)').text(pct.toFixed(0)+'%');
+      cumX+=pct;
+    });
+  });
+}
+
+function drawAgeLegend(){
+  const leg=d3.select('#ageLegend');leg.selectAll('*').remove();
+  AGE_GROUPS.forEach((age,i)=>{
+    const item=leg.append('div').attr('class','legend-item');
+    item.append('div').attr('class','legend-dot').style('background',AGE_COLORS[i]);
+    item.append('span').text(age);
+  });
+}
+</script>
+</body>
+</html>

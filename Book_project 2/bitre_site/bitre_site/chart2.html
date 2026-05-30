@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State &amp; Territory Comparison | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="page-shell">
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html" class="active">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner"><h1>State &amp; Territory Comparison</h1></div>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group">
+      <label for="yearFilter">Year</label>
+      <select id="yearFilter">
+        <option value="2023" selected>2023</option>
+        <option value="2022">2022</option>
+        <option value="2019">2019</option>
+        <option value="2016">2016</option>
+        <option value="2013">2013</option>
+        <option value="2010">2010</option>
+        <option value="2008">2008</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="offenceFilter">Offence Type</label>
+      <select id="offenceFilter">
+        <option value="All">All Offences (Total)</option>
+        <option value="Speeding">Speeding</option>
+        <option value="Mobile Phone">Mobile Phone</option>
+        <option value="Drink Driving">Drink Driving</option>
+        <option value="Drug Driving">Drug Driving</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="sortFilter">Sort By</label>
+      <select id="sortFilter">
+        <option value="count">Count (Highest First)</option>
+        <option value="alpha">Alphabetical</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dash-body">
+    <!-- Main bar chart -->
+    <div class="dash-panel" style="flex:3;">
+      <div class="panel-hd">
+        <div class="panel-title">Infringements by State / Territory</div>
+        <div class="panel-sub" id="barSubtitle">2023 · All Offences · Click a bar to highlight</div>
+      </div>
+      <div class="dash-chart" id="barChart"></div>
+      <div class="legend" id="barLegend"></div>
+    </div>
+
+    <!-- Share chart -->
+    <div class="dash-panel" style="flex:2;">
+      <div class="panel-hd">
+        <div class="panel-title">Share of National Total</div>
+        <div class="panel-sub">Each state's % of the national total</div>
+      </div>
+      <div class="dash-chart" id="shareChart"></div>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+<script>
+const COLORS = { 'Speeding':'#EE3A40','Mobile Phone':'#0096D8','Drink Driving':'#F97316','Drug Driving':'#00A04A' };
+const STATE_COLORS = ['#006FBD','#0096D8','#EE3A40','#F97316','#00A04A','#C87833','#7BC4E2','#6d6875'];
+const STATES = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
+const tooltip = d3.select('#tooltip');
+let allData, highlighted = null;
+
+const RAW = [
+  {year:2008,state:"NSW",o:"Speeding",c:412000},{year:2008,state:"VIC",o:"Speeding",c:389000},{year:2008,state:"QLD",o:"Speeding",c:201000},{year:2008,state:"WA",o:"Speeding",c:145000},{year:2008,state:"SA",o:"Speeding",c:98000},{year:2008,state:"TAS",o:"Speeding",c:22000},{year:2008,state:"ACT",o:"Speeding",c:18000},{year:2008,state:"NT",o:"Speeding",c:12000},
+  {year:2008,state:"NSW",o:"Mobile Phone",c:8200},{year:2008,state:"VIC",o:"Mobile Phone",c:6100},{year:2008,state:"QLD",o:"Mobile Phone",c:4200},{year:2008,state:"WA",o:"Mobile Phone",c:3100},{year:2008,state:"SA",o:"Mobile Phone",c:2100},{year:2008,state:"TAS",o:"Mobile Phone",c:510},{year:2008,state:"ACT",o:"Mobile Phone",c:420},{year:2008,state:"NT",o:"Mobile Phone",c:290},
+  {year:2008,state:"NSW",o:"Drink Driving",c:41000},{year:2008,state:"VIC",o:"Drink Driving",c:38000},{year:2008,state:"QLD",o:"Drink Driving",c:21000},{year:2008,state:"WA",o:"Drink Driving",c:16000},{year:2008,state:"SA",o:"Drink Driving",c:11000},{year:2008,state:"TAS",o:"Drink Driving",c:2800},{year:2008,state:"ACT",o:"Drink Driving",c:1900},{year:2008,state:"NT",o:"Drink Driving",c:3200},
+  {year:2008,state:"NSW",o:"Drug Driving",c:1200},{year:2008,state:"VIC",o:"Drug Driving",c:980},{year:2008,state:"QLD",o:"Drug Driving",c:610},{year:2008,state:"WA",o:"Drug Driving",c:420},{year:2008,state:"SA",o:"Drug Driving",c:280},{year:2008,state:"TAS",o:"Drug Driving",c:90},{year:2008,state:"ACT",o:"Drug Driving",c:70},{year:2008,state:"NT",o:"Drug Driving",c:110},
+  {year:2010,state:"NSW",o:"Speeding",c:445000},{year:2010,state:"VIC",o:"Speeding",c:401000},{year:2010,state:"QLD",o:"Speeding",c:218000},{year:2010,state:"WA",o:"Speeding",c:158000},{year:2010,state:"SA",o:"Speeding",c:104000},{year:2010,state:"TAS",o:"Speeding",c:24000},{year:2010,state:"ACT",o:"Speeding",c:19500},{year:2010,state:"NT",o:"Speeding",c:13000},
+  {year:2010,state:"NSW",o:"Mobile Phone",c:21000},{year:2010,state:"VIC",o:"Mobile Phone",c:18000},{year:2010,state:"QLD",o:"Mobile Phone",c:11000},{year:2010,state:"WA",o:"Mobile Phone",c:8200},{year:2010,state:"SA",o:"Mobile Phone",c:5400},{year:2010,state:"TAS",o:"Mobile Phone",c:1300},{year:2010,state:"ACT",o:"Mobile Phone",c:1100},{year:2010,state:"NT",o:"Mobile Phone",c:750},
+  {year:2010,state:"NSW",o:"Drink Driving",c:39000},{year:2010,state:"VIC",o:"Drink Driving",c:36000},{year:2010,state:"QLD",o:"Drink Driving",c:20000},{year:2010,state:"WA",o:"Drink Driving",c:15500},{year:2010,state:"SA",o:"Drink Driving",c:10500},{year:2010,state:"TAS",o:"Drink Driving",c:2700},{year:2010,state:"ACT",o:"Drink Driving",c:1800},{year:2010,state:"NT",o:"Drink Driving",c:3100},
+  {year:2010,state:"NSW",o:"Drug Driving",c:3800},{year:2010,state:"VIC",o:"Drug Driving",c:3200},{year:2010,state:"QLD",o:"Drug Driving",c:1900},{year:2010,state:"WA",o:"Drug Driving",c:1300},{year:2010,state:"SA",o:"Drug Driving",c:850},{year:2010,state:"TAS",o:"Drug Driving",c:280},{year:2010,state:"ACT",o:"Drug Driving",c:220},{year:2010,state:"NT",o:"Drug Driving",c:340},
+  {year:2013,state:"NSW",o:"Speeding",c:489000},{year:2013,state:"VIC",o:"Speeding",c:421000},{year:2013,state:"QLD",o:"Speeding",c:238000},{year:2013,state:"WA",o:"Speeding",c:171000},{year:2013,state:"SA",o:"Speeding",c:112000},{year:2013,state:"TAS",o:"Speeding",c:26000},{year:2013,state:"ACT",o:"Speeding",c:21000},{year:2013,state:"NT",o:"Speeding",c:14000},
+  {year:2013,state:"NSW",o:"Mobile Phone",c:48000},{year:2013,state:"VIC",o:"Mobile Phone",c:41000},{year:2013,state:"QLD",o:"Mobile Phone",c:25000},{year:2013,state:"WA",o:"Mobile Phone",c:18000},{year:2013,state:"SA",o:"Mobile Phone",c:12000},{year:2013,state:"TAS",o:"Mobile Phone",c:2900},{year:2013,state:"ACT",o:"Mobile Phone",c:2400},{year:2013,state:"NT",o:"Mobile Phone",c:1600},
+  {year:2013,state:"NSW",o:"Drink Driving",c:36000},{year:2013,state:"VIC",o:"Drink Driving",c:33000},{year:2013,state:"QLD",o:"Drink Driving",c:18500},{year:2013,state:"WA",o:"Drink Driving",c:14000},{year:2013,state:"SA",o:"Drink Driving",c:9800},{year:2013,state:"TAS",o:"Drink Driving",c:2500},{year:2013,state:"ACT",o:"Drink Driving",c:1700},{year:2013,state:"NT",o:"Drink Driving",c:2900},
+  {year:2013,state:"NSW",o:"Drug Driving",c:9200},{year:2013,state:"VIC",o:"Drug Driving",c:7800},{year:2013,state:"QLD",o:"Drug Driving",c:4600},{year:2013,state:"WA",o:"Drug Driving",c:3200},{year:2013,state:"SA",o:"Drug Driving",c:2100},{year:2013,state:"TAS",o:"Drug Driving",c:680},{year:2013,state:"ACT",o:"Drug Driving",c:540},{year:2013,state:"NT",o:"Drug Driving",c:820},
+  {year:2016,state:"NSW",o:"Speeding",c:521000},{year:2016,state:"VIC",o:"Speeding",c:448000},{year:2016,state:"QLD",o:"Speeding",c:258000},{year:2016,state:"WA",o:"Speeding",c:181000},{year:2016,state:"SA",o:"Speeding",c:119000},{year:2016,state:"TAS",o:"Speeding",c:28000},{year:2016,state:"ACT",o:"Speeding",c:22500},{year:2016,state:"NT",o:"Speeding",c:15000},
+  {year:2016,state:"NSW",o:"Mobile Phone",c:82000},{year:2016,state:"VIC",o:"Mobile Phone",c:71000},{year:2016,state:"QLD",o:"Mobile Phone",c:43000},{year:2016,state:"WA",o:"Mobile Phone",c:31000},{year:2016,state:"SA",o:"Mobile Phone",c:20500},{year:2016,state:"TAS",o:"Mobile Phone",c:4900},{year:2016,state:"ACT",o:"Mobile Phone",c:4100},{year:2016,state:"NT",o:"Mobile Phone",c:2700},
+  {year:2016,state:"NSW",o:"Drink Driving",c:33000},{year:2016,state:"VIC",o:"Drink Driving",c:30000},{year:2016,state:"QLD",o:"Drink Driving",c:17000},{year:2016,state:"WA",o:"Drink Driving",c:13000},{year:2016,state:"SA",o:"Drink Driving",c:9000},{year:2016,state:"TAS",o:"Drink Driving",c:2300},{year:2016,state:"ACT",o:"Drink Driving",c:1600},{year:2016,state:"NT",o:"Drink Driving",c:2700},
+  {year:2016,state:"NSW",o:"Drug Driving",c:18000},{year:2016,state:"VIC",o:"Drug Driving",c:15000},{year:2016,state:"QLD",o:"Drug Driving",c:9000},{year:2016,state:"WA",o:"Drug Driving",c:6200},{year:2016,state:"SA",o:"Drug Driving",c:4100},{year:2016,state:"TAS",o:"Drug Driving",c:1300},{year:2016,state:"ACT",o:"Drug Driving",c:1050},{year:2016,state:"NT",o:"Drug Driving",c:1580},
+  {year:2019,state:"NSW",o:"Speeding",c:558000},{year:2019,state:"VIC",o:"Speeding",c:471000},{year:2019,state:"QLD",o:"Speeding",c:278000},{year:2019,state:"WA",o:"Speeding",c:191000},{year:2019,state:"SA",o:"Speeding",c:126000},{year:2019,state:"TAS",o:"Speeding",c:30000},{year:2019,state:"ACT",o:"Speeding",c:24000},{year:2019,state:"NT",o:"Speeding",c:16000},
+  {year:2019,state:"NSW",o:"Mobile Phone",c:121000},{year:2019,state:"VIC",o:"Mobile Phone",c:104000},{year:2019,state:"QLD",o:"Mobile Phone",c:63000},{year:2019,state:"WA",o:"Mobile Phone",c:46000},{year:2019,state:"SA",o:"Mobile Phone",c:30000},{year:2019,state:"TAS",o:"Mobile Phone",c:7200},{year:2019,state:"ACT",o:"Mobile Phone",c:6000},{year:2019,state:"NT",o:"Mobile Phone",c:4000},
+  {year:2019,state:"NSW",o:"Drink Driving",c:30000},{year:2019,state:"VIC",o:"Drink Driving",c:27500},{year:2019,state:"QLD",o:"Drink Driving",c:15500},{year:2019,state:"WA",o:"Drink Driving",c:12000},{year:2019,state:"SA",o:"Drink Driving",c:8200},{year:2019,state:"TAS",o:"Drink Driving",c:2100},{year:2019,state:"ACT",o:"Drink Driving",c:1400},{year:2019,state:"NT",o:"Drink Driving",c:2500},
+  {year:2019,state:"NSW",o:"Drug Driving",c:29000},{year:2019,state:"VIC",o:"Drug Driving",c:24500},{year:2019,state:"QLD",o:"Drug Driving",c:14700},{year:2019,state:"WA",o:"Drug Driving",c:10100},{year:2019,state:"SA",o:"Drug Driving",c:6700},{year:2019,state:"TAS",o:"Drug Driving",c:2150},{year:2019,state:"ACT",o:"Drug Driving",c:1700},{year:2019,state:"NT",o:"Drug Driving",c:2580},
+  {year:2022,state:"NSW",o:"Speeding",c:591000},{year:2022,state:"VIC",o:"Speeding",c:498000},{year:2022,state:"QLD",o:"Speeding",c:301000},{year:2022,state:"WA",o:"Speeding",c:203000},{year:2022,state:"SA",o:"Speeding",c:134000},{year:2022,state:"TAS",o:"Speeding",c:32000},{year:2022,state:"ACT",o:"Speeding",c:25500},{year:2022,state:"NT",o:"Speeding",c:17000},
+  {year:2022,state:"NSW",o:"Mobile Phone",c:158000},{year:2022,state:"VIC",o:"Mobile Phone",c:136000},{year:2022,state:"QLD",o:"Mobile Phone",c:82000},{year:2022,state:"WA",o:"Mobile Phone",c:60000},{year:2022,state:"SA",o:"Mobile Phone",c:39000},{year:2022,state:"TAS",o:"Mobile Phone",c:9400},{year:2022,state:"ACT",o:"Mobile Phone",c:7800},{year:2022,state:"NT",o:"Mobile Phone",c:5200},
+  {year:2022,state:"NSW",o:"Drink Driving",c:28000},{year:2022,state:"VIC",o:"Drink Driving",c:25000},{year:2022,state:"QLD",o:"Drink Driving",c:14000},{year:2022,state:"WA",o:"Drink Driving",c:11000},{year:2022,state:"SA",o:"Drink Driving",c:7500},{year:2022,state:"TAS",o:"Drink Driving",c:1900},{year:2022,state:"ACT",o:"Drink Driving",c:1300},{year:2022,state:"NT",o:"Drink Driving",c:2300},
+  {year:2022,state:"NSW",o:"Drug Driving",c:41000},{year:2022,state:"VIC",o:"Drug Driving",c:34500},{year:2022,state:"QLD",o:"Drug Driving",c:20700},{year:2022,state:"WA",o:"Drug Driving",c:14300},{year:2022,state:"SA",o:"Drug Driving",c:9500},{year:2022,state:"TAS",o:"Drug Driving",c:3050},{year:2022,state:"ACT",o:"Drug Driving",c:2400},{year:2022,state:"NT",o:"Drug Driving",c:3650},
+  {year:2023,state:"NSW",o:"Speeding",c:612000},{year:2023,state:"VIC",o:"Speeding",c:511000},{year:2023,state:"QLD",o:"Speeding",c:314000},{year:2023,state:"WA",o:"Speeding",c:211000},{year:2023,state:"SA",o:"Speeding",c:139000},{year:2023,state:"TAS",o:"Speeding",c:33500},{year:2023,state:"ACT",o:"Speeding",c:26500},{year:2023,state:"NT",o:"Speeding",c:17800},
+  {year:2023,state:"NSW",o:"Mobile Phone",c:171000},{year:2023,state:"VIC",o:"Mobile Phone",c:148000},{year:2023,state:"QLD",o:"Mobile Phone",c:89000},{year:2023,state:"WA",o:"Mobile Phone",c:65000},{year:2023,state:"SA",o:"Mobile Phone",c:42000},{year:2023,state:"TAS",o:"Mobile Phone",c:10200},{year:2023,state:"ACT",o:"Mobile Phone",c:8500},{year:2023,state:"NT",o:"Mobile Phone",c:5700},
+  {year:2023,state:"NSW",o:"Drink Driving",c:27000},{year:2023,state:"VIC",o:"Drink Driving",c:24000},{year:2023,state:"QLD",o:"Drink Driving",c:13500},{year:2023,state:"WA",o:"Drink Driving",c:10500},{year:2023,state:"SA",o:"Drink Driving",c:7200},{year:2023,state:"TAS",o:"Drink Driving",c:1800},{year:2023,state:"ACT",o:"Drink Driving",c:1200},{year:2023,state:"NT",o:"Drink Driving",c:2200},
+  {year:2023,state:"NSW",o:"Drug Driving",c:48000},{year:2023,state:"VIC",o:"Drug Driving",c:40500},{year:2023,state:"QLD",o:"Drug Driving",c:24300},{year:2023,state:"WA",o:"Drug Driving",c:16800},{year:2023,state:"SA",o:"Drug Driving",c:11200},{year:2023,state:"TAS",o:"Drug Driving",c:3600},{year:2023,state:"ACT",o:"Drug Driving",c:2850},{year:2023,state:"NT",o:"Drug Driving",c:4300}
+];
+allData = RAW.map(d=>({year:+d.year,state:d.state,offence:d.o,count:+d.c}));
+setTimeout(()=>render(),0);
+['yearFilter','offenceFilter','sortFilter'].forEach(id=>d3.select('#'+id).on('change',()=>{if(id==='yearFilter'||id==='offenceFilter')highlighted=null;render();}));
+window.addEventListener('resize',render);
+
+function render(){
+  const year=+d3.select('#yearFilter').node().value;
+  const offence=d3.select('#offenceFilter').node().value;
+  const sort=d3.select('#sortFilter').node().value;
+  let filtered=allData.filter(d=>d.year===year);
+  if(offence!=='All') filtered=filtered.filter(d=>d.offence===offence);
+  const byState=d3.rollup(filtered,v=>d3.sum(v,d=>d.count),d=>d.state);
+  let stateData=STATES.map((s,i)=>({state:s,count:byState.get(s)||0,color:STATE_COLORS[i]}));
+  if(sort==='count') stateData.sort((a,b)=>b.count-a.count);
+  d3.select('#barSubtitle').text(`${year} · ${offence==='All'?'All Offences':offence} · Click a bar to highlight`);
+  drawBars(stateData,offence);
+  drawShare(stateData);
+  drawBarLegend(offence);
+}
+
+function drawBars(stateData,offence){
+  const el=document.getElementById('barChart');
+  const W=el.clientWidth||600, H=el.clientHeight||260;
+  const M={top:10,right:14,bottom:44,left:74};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  let svg=d3.select(el).select('svg');
+  if(svg.empty()){
+    svg=d3.select(el).append('svg').style('display','block');
+    svg.append('g').attr('class','grid-g');
+    svg.append('g').attr('class','axis axis-x');
+    svg.append('g').attr('class','axis axis-y');
+    svg.append('text').attr('class','y-label').attr('transform','rotate(-90)').attr('text-anchor','middle').attr('fill','rgba(170,195,220,0.5)').attr('font-size',9.5).attr('font-family','var(--font-body)').text('Infringements');
+    svg.append('g').attr('class','bars-g');
+  }
+  svg.attr('width',W).attr('height',H);
+  svg.select('.grid-g').attr('transform',`translate(${M.left},${M.top})`);
+  svg.select('.axis-x').attr('transform',`translate(${M.left},${M.top+h})`);
+  svg.select('.axis-y').attr('transform',`translate(${M.left},${M.top})`);
+  svg.select('.y-label').attr('x',-h/2-M.top).attr('y',M.left-62);
+  svg.select('.bars-g').attr('transform',`translate(${M.left},${M.top})`);
+  const xScale=d3.scaleBand().domain(stateData.map(d=>d.state)).range([0,w]).padding(0.28);
+  const yScale=d3.scaleLinear().domain([0,d3.max(stateData,d=>d.count)*1.12]).range([h,0]).nice();
+  svg.select('.grid-g').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(4)).attr('class','grid grid-g');
+  svg.select('.axis-x').transition().duration(400).call(d3.axisBottom(xScale)).attr('class','axis axis-x');
+  svg.select('.axis-y').transition().duration(400).call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>d3.format('.2s')(d))).attr('class','axis axis-y');
+  const g=svg.select('.bars-g');
+  const bars=g.selectAll('.bar-grp').data(stateData,d=>d.state);
+  const barsE=bars.enter().append('g').attr('class','bar-grp');
+  barsE.append('rect').attr('class','bar').attr('rx',4).attr('y',h).attr('height',0);
+  barsE.append('text').attr('class','bar-label');
+  bars.exit().remove();
+  bars.merge(barsE).each(function(d){
+    const dim=highlighted&&highlighted!==d.state;
+    const fill=offence==='All'?d.color:(COLORS[offence]||d.color);
+    const bg=d3.select(this);
+    bg.select('.bar').attr('x',xScale(d.state)).attr('width',xScale.bandwidth()).style('cursor','pointer').attr('fill',fill).attr('opacity',dim?0.18:1)
+      .on('click',()=>{highlighted=(highlighted===d.state)?null:d.state;render();})
+      .on('mousemove',event=>{tooltip.classed('visible',true).html(`<div class="tooltip-title">${d.state}</div><hr>${d.count.toLocaleString()} infringements`).style('left',(event.clientX+14)+'px').style('top',(event.clientY-48)+'px');})
+      .on('mouseleave',()=>tooltip.classed('visible',false))
+      .transition().duration(450).attr('y',yScale(d.count)).attr('height',h-yScale(d.count));
+    bg.select('.bar-label').attr('x',xScale(d.state)+xScale.bandwidth()/2).attr('text-anchor','middle').attr('font-size',9).attr('fill',dim?'rgba(100,130,155,0.25)':'rgba(170,195,220,0.7)').attr('font-family','var(--font-body)').attr('pointer-events','none').text(d.count>0?d3.format('.2s')(d.count):'').transition().duration(450).attr('y',yScale(d.count)-4);
+  });
+}
+
+function drawShare(stateData){
+  const el=document.getElementById('shareChart');
+  d3.select(el).selectAll('*').remove();
+  const total=d3.sum(stateData,d=>d.count)||1;
+  const W=el.clientWidth||400, H=el.clientHeight||260;
+  const M={top:6,right:50,bottom:24,left:44};
+  const w=W-M.left-M.right, h=H-M.top-M.bottom;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H).style('display','block').append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const sorted=[...stateData].sort((a,b)=>b.count-a.count);
+  const xScale=d3.scaleLinear().domain([0,100]).range([0,w]);
+  const yScale=d3.scaleBand().domain(sorted.map(d=>d.state)).range([0,h]).padding(0.3);
+  svg.append('g').attr('class','axis').call(d3.axisLeft(yScale));
+  svg.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale).tickFormat(d=>d+'%').ticks(4));
+  sorted.forEach(d=>{
+    const pct=(d.count/total)*100;
+    const dim=highlighted&&highlighted!==d.state;
+    svg.append('rect').attr('x',0).attr('y',yScale(d.state)).attr('height',yScale.bandwidth()).attr('rx',3)
+      .attr('fill',d.color).attr('opacity',dim?0.15:0.85).attr('width',0)
+      .transition().duration(550).delay(30).attr('width',xScale(pct));
+    if(pct>1.5) svg.append('text').attr('x',xScale(pct)+5).attr('y',yScale(d.state)+yScale.bandwidth()/2+4).attr('font-size',9.5).attr('font-family','var(--font-body)').attr('fill',dim?'rgba(100,130,155,0.25)':'rgba(170,195,220,0.65)').text(pct.toFixed(1)+'%');
+  });
+}
+
+function drawBarLegend(offence){
+  const leg=d3.select('#barLegend');leg.selectAll('*').remove();
+  if(offence!=='All'){
+    const item=leg.append('div').attr('class','legend-item');
+    item.append('div').attr('class','legend-dot').style('background',COLORS[offence]);
+    item.append('span').text(offence);
+  } else {
+    STATES.forEach((s,i)=>{
+      const item=leg.append('div').attr('class','legend-item');
+      item.append('div').attr('class','legend-dot').style('background',STATE_COLORS[i]);
+      item.append('span').text(s);
+    });
+  }
+  if(highlighted) leg.append('div').attr('class','legend-clear').text('✕ Clear').on('click',()=>{highlighted=null;render();});
+}
+</script>
+</body>
+</html>

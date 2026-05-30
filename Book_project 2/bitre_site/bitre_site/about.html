@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | BITRE Road Safety</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="nav-dot"></span><span>BITRE Road Safety</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="chart1.html">Trends</a></li>
+      <li><a href="chart2.html">By State</a></li>
+      <li><a href="chart3.html">Age Groups</a></li>
+      <li><a href="chart4.html">Location</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+    </ul>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a><span class="breadcrumb-sep">›</span>About</div>
+      <h1>About This Project</h1>
+      <p>COS30045 Data Visualisation — Semester 1, 2025 · Swinburne University of Technology</p>
+    </div>
+  </div>
+
+  <div class="about-content">
+
+    <h2>Project Overview</h2>
+    <p>This website was built as part of <strong>COS30045 Data Visualisation</strong> at Swinburne University of Technology. Our brief was to design and implement interactive visualisations exploring the BITRE road safety enforcement dataset and to tell a meaningful story about some aspect of that data.</p>
+    <p>The existing BITRE Police Enforcement Dashboard (built in Power BI) does not incorporate the new 2023 granular data fields — including location type, age group, arrests, and charges. Our four visualisations directly address this gap by making those new dimensions explorable.</p>
+
+    <h2>The Data</h2>
+    <p>The dataset covers road safety enforcement activities across all Australian states and territories from 2008. Data is sourced from state and territory police agencies and state revenue offices and published annually by BITRE.</p>
+    <p><strong>Key variables:</strong> Year (2008–2023), jurisdiction (all 8 states/territories), offence type (speeding, mobile phone use, drink driving, drug driving), and enforcement count. From 2023 onward: location type (metropolitan, regional, rural, remote) and age group of offender.</p>
+    <p><strong>Source:</strong> <a href="https://www.bitre.gov.au/publications/2024/road-safety-enforcement-data" target="_blank" rel="noopener">BITRE Road Safety Enforcement Data 2024 — bitre.gov.au</a></p>
+
+    <h2>Visualisations</h2>
+    <p>We built four interactive visualisations using D3.js v7, each addressing a different dimension of the dataset:</p>
+    <ul>
+      <li><a href="chart1.html">Enforcement Trends Over Time</a> — Multi-line chart (2008–2023), filterable by state and offence type. Includes an indexed view (2008 = 100) and a year-on-year percentage change bar chart.</li>
+      <li><a href="chart2.html">State &amp; Territory Comparison</a> — Animated bar chart comparing all 8 jurisdictions for any selected year and offence. Includes animated sort transitions and click-to-highlight interaction.</li>
+      <li><a href="chart3.html">Age Group Breakdown (2023)</a> — Grouped and stacked bar charts using the new 2023 age-group data. Toggle between absolute and percentage display with animated transitions.</li>
+      <li><a href="chart4.html">Location Type Analysis (2023)</a> — Heatmap (location × offence), grouped bars by location, and animated donut charts per offence type.</li>
+    </ul>
+
+    <h2>The Team</h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">IM</div>
+        <h3>Ismail Mehtiyev</h3>
+        <p>Student ID: 106407636<br>D3 Developer &amp; Data Visualisation</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">MA</div>
+        <h3>Mohamed Adhuham Mohamed Althaf</h3>
+        <p>Student ID: 105110645<br>Data Analysis &amp; Web Development</p>
+      </div>
+    </div>
+
+    <h2>Technology Stack</h2>
+    <div class="tech-pills">
+      <span class="tech-pill">D3.js v7</span>
+      <span class="tech-pill">HTML5</span>
+      <span class="tech-pill">CSS3</span>
+      <span class="tech-pill">Vanilla JavaScript</span>
+      <span class="tech-pill">KNIME Analytics Platform</span>
+      <span class="tech-pill">GitHub</span>
+      <span class="tech-pill">Swinburne Mercury Server</span>
+    </div>
+    <p>Visualisations are built entirely in <strong>D3.js v7</strong> with no additional charting libraries. All chart rendering is done client-side. Data processing was performed in <strong>KNIME Analytics Platform</strong>. The site is hosted on Swinburne's <strong>Mercury server</strong>.</p>
+
+    <h2>Design Decisions</h2>
+    <p>The visual design uses a dark navy hero section to establish a professional, data-focused identity, with clean white chart containers that prioritise legibility. A consistent colour palette across all charts maps offence types to the same colours throughout the site — speeding = red, mobile phone = blue, drink driving = gold, drug driving = teal — reducing cognitive load when navigating between pages.</p>
+    <p>Interactive controls and animated transitions were prioritised over static views. Tooltips provide exact values on hover for all data points. Chart transitions animate smoothly when filters change, helping users track how values shift rather than jumping between static states.</p>
+
+    <h2>References</h2>
+    <ul>
+      <li>BITRE (2024). <em>Road Safety Enforcement Data.</em> Australian Government. <a href="https://www.bitre.gov.au/publications/2024/road-safety-enforcement-data" target="_blank" rel="noopener">bitre.gov.au</a></li>
+      <li>Bostock, M., Ogievetsky, V., &amp; Heer, J. (2011). D3: Data-Driven Documents. <em>IEEE Trans. on Visualization and Computer Graphics.</em> <a href="https://d3js.org" target="_blank" rel="noopener">d3js.org</a></li>
+      <li>KNIME AG. <em>KNIME Analytics Platform.</em> <a href="https://www.knime.com" target="_blank" rel="noopener">knime.com</a></li>
+      <li>Ware, C. (2012). <em>Information Visualization: Perception for Design</em> (3rd ed.). Morgan Kaufmann.</li>
+      <li>Munzner, T. (2014). <em>Visualization Analysis and Design.</em> CRC Press.</li>
+    </ul>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-cols">
+      <div><h4>COS30045 Data Visualisation</h4><p>Swinburne University of Technology<br>Semester 1, 2026</p></div>
+      <div><h4>Data Source</h4><p>Bureau of Infrastructure and Transport Research Economics (BITRE)<br>Road Safety Enforcement Data 2024</p></div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="chart1.html">Trends Over Time</a></li>
+          <li><a href="chart2.html">State Comparison</a></li>
+          <li><a href="chart3.html">Age Groups (2023)</a></li>
+          <li><a href="chart4.html">Location Analysis (2023)</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 COS30045 Project Team · Data: BITRE Australian Government · Built with D3.js v7</p></div>
+  </footer>
+</body>
+</html>
